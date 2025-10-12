@@ -18,6 +18,7 @@ export interface CalendarEvent {
   endTime: string; // HH:MM format
   type: 'class' | 'blocker' | 'availability' | 'event';
   location?: string;
+  rsvpStatus?: 'going' | 'not_going' | 'maybe' | 'no_response'; // For events
 }
 
 interface WeekViewProps {
@@ -43,7 +44,7 @@ function timeToMinutes(time: string): number {
   return hours * 60 + minutes;
 }
 
-function getEventColor(type: CalendarEvent['type']): { bg: string; border: string; text: string } {
+function getEventColor(type: CalendarEvent['type'], rsvpStatus?: 'going' | 'not_going' | 'maybe' | 'no_response'): { bg: string; border: string; text: string } {
   switch (type) {
     case 'class':
       return {
@@ -64,11 +65,32 @@ function getEventColor(type: CalendarEvent['type']): { bg: string; border: strin
         text: '#ffffff'
       };
     case 'event':
-      return {
-        bg: '#2563eb', // Blue
-        border: '#1e40af',
-        text: '#ffffff'
-      };
+      // Different colors based on RSVP status
+      if (rsvpStatus === 'going') {
+        return {
+          bg: '#16a34a', // Green - confirmed going
+          border: '#15803d',
+          text: '#ffffff'
+        };
+      } else if (rsvpStatus === 'maybe') {
+        return {
+          bg: '#f59e0b', // Amber - maybe
+          border: '#d97706',
+          text: '#ffffff'
+        };
+      } else if (rsvpStatus === 'not_going') {
+        return {
+          bg: '#dc2626', // Red - not going
+          border: '#b91c1c',
+          text: '#ffffff'
+        };
+      } else {
+        return {
+          bg: '#2563eb', // Blue - no response yet
+          border: '#1e40af',
+          text: '#ffffff'
+        };
+      }
     default:
       return {
         bg: '#6b7280', // Gray
@@ -151,6 +173,22 @@ export function WeekView({ events, selectedDate, onSlotClick, onEventClick, show
             </div>
             <span className="text-xs sm:text-sm font-medium text-gray-700">Blocker</span>
           </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-5 h-5 rounded bg-blue-600" />
+            <span className="text-xs sm:text-sm font-medium text-gray-700">Event (No Response)</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-5 h-5 rounded bg-green-600" />
+            <span className="text-xs sm:text-sm font-medium text-gray-700">Event (Going)</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-5 h-5 rounded bg-amber-500" />
+            <span className="text-xs sm:text-sm font-medium text-gray-700">Event (Maybe)</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-5 h-5 rounded bg-red-600" />
+            <span className="text-xs sm:text-sm font-medium text-gray-700">Event (Not Going)</span>
+          </div>
           <div className="flex items-center gap-1.5 ml-auto">
             <AlertCircle className="h-4 w-4 text-yellow-600" />
             <span className="text-xs sm:text-sm font-medium text-gray-700">Conflict</span>
@@ -230,7 +268,7 @@ export function WeekView({ events, selectedDate, onSlotClick, onEventClick, show
                           const top = Math.max(0, ((eventStart - hourStart) / 60) * 100);
                           const bottom = Math.max(0, ((hourEnd - eventEnd) / 60) * 100);
 
-                          const colors = getEventColor(event.type);
+                          const colors = getEventColor(event.type, event.rsvpStatus);
                           const hasOverlap = hasConflict(event, events);
 
                           return (
@@ -245,7 +283,7 @@ export function WeekView({ events, selectedDate, onSlotClick, onEventClick, show
                                 e.stopPropagation();
                                 onEventClick?.(event);
                               }}
-                              title={`${getTypeLabel(event.type)}: ${event.title}\n${event.startTime} - ${event.endTime}${event.location ? '\n' + event.location : ''}${hasOverlap ? '\n⚠️ Conflicts with other events' : ''}`}
+                              title={`${getTypeLabel(event.type)}: ${event.title}\n${event.startTime} - ${event.endTime}${event.location ? '\n' + event.location : ''}${event.rsvpStatus && event.type === 'event' ? '\nRSVP: ' + event.rsvpStatus.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) : ''}${hasOverlap ? '\n⚠️ Conflicts with other events' : ''}`}
                             >
                               <div
                                 className={cn(

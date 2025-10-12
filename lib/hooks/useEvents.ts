@@ -57,39 +57,58 @@ export function useEvents() {
       setLoading(true);
       setError(null);
 
-      // Build the query to filter events based on user's attributes
-      let query = supabase
+      // Get user's team memberships
+      const { data: userTeamsData, error: userTeamsError } = await supabase
+        .from('user_teams')
+        .select('team_id')
+        .eq('user_id', profile.id);
+
+      if (userTeamsError) throw userTeamsError;
+
+      const userTeamIds = userTeamsData?.map(ut => ut.team_id) || [];
+
+      if (userTeamIds.length === 0) {
+        // User is not on any teams (e.g., coach), show no events
+        setEvents([]);
+        setLoading(false);
+        return;
+      }
+
+      // Get events that target the user's teams
+      const { data: eventTeamsData, error: eventTeamsError } = await supabase
+        .from('event_teams')
+        .select('event_id')
+        .in('team_id', userTeamIds);
+
+      if (eventTeamsError) throw eventTeamsError;
+
+      const eventIds = eventTeamsData?.map(et => et.event_id) || [];
+
+      if (eventIds.length === 0) {
+        // No events target user's teams
+        setEvents([]);
+        setLoading(false);
+        return;
+      }
+
+      // Fetch the actual events
+      const { data: eventsData, error: fetchError } = await supabase
         .from('events')
         .select('*')
+        .in('id', eventIds)
         .order('start_datetime', { ascending: true });
-
-      // Filter by gender
-      if (profile.gender === 'men') {
-        query = query.eq('applies_to_men', true);
-      } else if (profile.gender === 'women') {
-        query = query.eq('applies_to_women', true);
-      }
-
-      // Filter by team level
-      if (profile.team_level === 'jv') {
-        query = query.eq('applies_to_jv', true);
-      } else if (profile.team_level === 'varsity') {
-        query = query.eq('applies_to_varsity', true);
-      }
-
-      const { data: eventsData, error: fetchError } = await query;
 
       if (fetchError) {
         throw fetchError;
       }
 
       // Fetch user's RSVPs for these events
-      const eventIds = (eventsData || []).map(e => e.id);
+      const fetchedEventIds = (eventsData || []).map(e => e.id);
       const { data: rsvpsData } = await supabase
         .from('event_responses')
         .select('*')
         .eq('user_id', profile.id)
-        .in('event_id', eventIds);
+        .in('event_id', fetchedEventIds);
 
       // Create a map of event_id to RSVP
       const rsvpMap = new Map(

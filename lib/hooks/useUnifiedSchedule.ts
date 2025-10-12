@@ -226,6 +226,9 @@ export function useUnifiedSchedule({ quarter, year }: UseUnifiedScheduleProps) {
         const startTime = format(startDate, 'HH:mm');
         const endTime = format(endDate, 'HH:mm');
 
+        // Determine RSVP status for styling
+        const rsvpResponse = event.user_rsvp?.response || 'no_response';
+
         calendarEvents.push({
           id: `event-${event.id}`,
           title: event.title,
@@ -234,6 +237,7 @@ export function useUnifiedSchedule({ quarter, year }: UseUnifiedScheduleProps) {
           endTime: endTime,
           type: 'event',
           location: event.location || undefined,
+          rsvpStatus: rsvpResponse, // Add RSVP status for styling
         });
       });
     }
