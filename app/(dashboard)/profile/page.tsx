@@ -10,8 +10,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
-import { BRAND_COLORS, UserRole, Gender, TeamLevel } from '@/lib/constants';
-import { User, Mail, Smartphone, Shield, Users, Award } from 'lucide-react';
+import { BRAND_COLORS, UserRole, Gender } from '@/lib/constants';
+import { User, Mail, Smartphone, Shield, Users } from 'lucide-react';
 
 export default function ProfilePage() {
   const { profile } = useUser();
@@ -49,9 +49,6 @@ export default function ProfilePage() {
     return gender === Gender.MEN ? "Men's Team" : "Women's Team";
   };
 
-  const getTeamLevelLabel = (level: TeamLevel) => {
-    return level === TeamLevel.VARSITY ? 'Varsity' : 'JV';
-  };
 
   return (
     <div className="space-y-6 max-w-4xl">
@@ -90,9 +87,6 @@ export default function ProfilePage() {
                 </span>
                 <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
                   {getGenderLabel(profile.gender)}
-                </span>
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
-                  {getTeamLevelLabel(profile.team_level)}
                 </span>
               </div>
             </div>
@@ -146,15 +140,6 @@ export default function ProfilePage() {
                 <span>Team</span>
               </div>
               <p className="text-gray-900">{getGenderLabel(profile.gender)}</p>
-            </div>
-
-            {/* Team Level */}
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 text-sm font-medium text-gray-500">
-                <Award className="h-4 w-4" aria-hidden="true" />
-                <span>Team Level</span>
-              </div>
-              <p className="text-gray-900">{getTeamLevelLabel(profile.team_level)}</p>
             </div>
 
             {/* Member Since */}

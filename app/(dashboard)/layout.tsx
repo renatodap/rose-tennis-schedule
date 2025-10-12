@@ -24,7 +24,6 @@ import { BRAND_COLORS, UserRole } from '@/lib/constants';
 import {
   Home,
   Calendar,
-  Clock,
   CalendarDays,
   User,
   Settings,
@@ -100,7 +99,6 @@ export default function DashboardLayout({
   const navigation = [
     { name: 'Home', href: '/dashboard', icon: Home },
     { name: 'Schedule', href: '/schedule', icon: Calendar },
-    { name: 'Availability', href: '/availability', icon: Clock },
     { name: 'Events', href: '/events', icon: CalendarDays },
     { name: 'Profile', href: '/profile', icon: User },
   ];

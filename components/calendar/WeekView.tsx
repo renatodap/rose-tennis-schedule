@@ -3,10 +3,12 @@
 /**
  * WeekView component - displays a week (Sunday-Saturday) with time slots
  * Mobile-first design with horizontal scrolling for days and vertical scrolling for time
+ * Enhanced with conflict detection, legend, and tooltips
  */
 
 import { cn } from '@/lib/utils/cn';
 import { BRAND_COLORS } from '@/lib/constants';
+import { GraduationCap, Clock, Ban, AlertCircle } from 'lucide-react';
 
 export interface CalendarEvent {
   id: string;
@@ -23,6 +25,7 @@ interface WeekViewProps {
   selectedDate: Date;
   onSlotClick?: (dayOfWeek: number, hour: number) => void;
   onEventClick?: (event: CalendarEvent) => void;
+  showLegend?: boolean;
 }
 
 const HOURS = Array.from({ length: 17 }, (_, i) => i + 6); // 6 AM to 11 PM
@@ -40,26 +43,124 @@ function timeToMinutes(time: string): number {
   return hours * 60 + minutes;
 }
 
-function getEventColor(type: CalendarEvent['type']): string {
+function getEventColor(type: CalendarEvent['type']): { bg: string; border: string; text: string } {
   switch (type) {
     case 'class':
-      return BRAND_COLORS.PRIMARY; // Maroon
+      return {
+        bg: BRAND_COLORS.PRIMARY, // Maroon
+        border: '#5c0000',
+        text: '#ffffff'
+      };
     case 'blocker':
-      return '#ea580c'; // Orange-red
+      return {
+        bg: '#ea580c', // Orange-red
+        border: '#c2410c',
+        text: '#ffffff'
+      };
     case 'availability':
-      return '#16a34a'; // Green
+      return {
+        bg: '#16a34a', // Green
+        border: '#15803d',
+        text: '#ffffff'
+      };
     case 'event':
-      return '#2563eb'; // Blue
+      return {
+        bg: '#2563eb', // Blue
+        border: '#1e40af',
+        text: '#ffffff'
+      };
     default:
-      return '#6b7280'; // Gray
+      return {
+        bg: '#6b7280', // Gray
+        border: '#4b5563',
+        text: '#ffffff'
+      };
   }
 }
 
-export function WeekView({ events, selectedDate, onSlotClick, onEventClick }: WeekViewProps) {
+function getTypeIcon(type: CalendarEvent['type']) {
+  switch (type) {
+    case 'class':
+      return <GraduationCap className="h-3 w-3 sm:h-4 sm:w-4" />;
+    case 'blocker':
+      return <Ban className="h-3 w-3 sm:h-4 sm:w-4" />;
+    case 'availability':
+      return <Clock className="h-3 w-3 sm:h-4 sm:w-4" />;
+    default:
+      return null;
+  }
+}
+
+function getTypeLabel(type: CalendarEvent['type']): string {
+  switch (type) {
+    case 'class':
+      return 'Class';
+    case 'blocker':
+      return 'Blocker';
+    case 'availability':
+      return 'Available';
+    case 'event':
+      return 'Event';
+    default:
+      return 'Unknown';
+  }
+}
+
+/**
+ * Check if two events overlap in time
+ */
+function eventsOverlap(event1: CalendarEvent, event2: CalendarEvent): boolean {
+  if (event1.dayOfWeek !== event2.dayOfWeek) return false;
+
+  const start1 = timeToMinutes(event1.startTime);
+  const end1 = timeToMinutes(event1.endTime);
+  const start2 = timeToMinutes(event2.startTime);
+  const end2 = timeToMinutes(event2.endTime);
+
+  return start1 < end2 && end1 > start2;
+}
+
+/**
+ * Detect conflicts for a given event
+ */
+function hasConflict(event: CalendarEvent, allEvents: CalendarEvent[]): boolean {
+  return allEvents.some(other => other.id !== event.id && eventsOverlap(event, other));
+}
+
+export function WeekView({ events, selectedDate, onSlotClick, onEventClick, showLegend = true }: WeekViewProps) {
   return (
-    <div className="flex flex-col h-full border border-gray-200 rounded-lg overflow-hidden bg-white">
-      {/* Days header - sticky */}
-      <div className="flex border-b border-gray-200 bg-gray-50 sticky top-0 z-20">
+    <div className="flex flex-col h-full">
+      {/* Legend */}
+      {showLegend && (
+        <div className="mb-3 flex flex-wrap gap-3 sm:gap-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+          <div className="flex items-center gap-1.5">
+            <div className="flex items-center justify-center w-5 h-5 rounded" style={{ backgroundColor: BRAND_COLORS.PRIMARY }}>
+              <GraduationCap className="h-3 w-3 text-white" />
+            </div>
+            <span className="text-xs sm:text-sm font-medium text-gray-700">Class</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="flex items-center justify-center w-5 h-5 rounded bg-green-600">
+              <Clock className="h-3 w-3 text-white" />
+            </div>
+            <span className="text-xs sm:text-sm font-medium text-gray-700">Available</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="flex items-center justify-center w-5 h-5 rounded bg-orange-600">
+              <Ban className="h-3 w-3 text-white" />
+            </div>
+            <span className="text-xs sm:text-sm font-medium text-gray-700">Blocker</span>
+          </div>
+          <div className="flex items-center gap-1.5 ml-auto">
+            <AlertCircle className="h-4 w-4 text-yellow-600" />
+            <span className="text-xs sm:text-sm font-medium text-gray-700">Conflict</span>
+          </div>
+        </div>
+      )}
+
+      <div className="flex-1 border border-gray-200 rounded-lg overflow-hidden bg-white">
+        {/* Days header - sticky */}
+        <div className="flex border-b border-gray-200 bg-gray-50 sticky top-0 z-20">
         {/* Time column header */}
         <div className="w-14 sm:w-16 flex-shrink-0 border-r border-gray-200" />
 
@@ -129,10 +230,13 @@ export function WeekView({ events, selectedDate, onSlotClick, onEventClick }: We
                           const top = Math.max(0, ((eventStart - hourStart) / 60) * 100);
                           const bottom = Math.max(0, ((hourEnd - eventEnd) / 60) * 100);
 
+                          const colors = getEventColor(event.type);
+                          const hasOverlap = hasConflict(event, events);
+
                           return (
                             <div
                               key={event.id}
-                              className="absolute inset-x-0 px-0.5 sm:px-1 cursor-pointer hover:opacity-80 transition-opacity"
+                              className="absolute inset-x-0 px-0.5 sm:px-1 cursor-pointer group"
                               style={{
                                 top: `${top}%`,
                                 bottom: `${bottom}%`,
@@ -141,17 +245,38 @@ export function WeekView({ events, selectedDate, onSlotClick, onEventClick }: We
                                 e.stopPropagation();
                                 onEventClick?.(event);
                               }}
+                              title={`${getTypeLabel(event.type)}: ${event.title}\n${event.startTime} - ${event.endTime}${event.location ? '\n' + event.location : ''}${hasOverlap ? '\n⚠️ Conflicts with other events' : ''}`}
                             >
                               <div
-                                className="h-full rounded text-white shadow-sm overflow-hidden p-0.5 sm:p-1"
-                                style={{ backgroundColor: getEventColor(event.type) }}
+                                className={cn(
+                                  "h-full rounded shadow-sm overflow-hidden p-0.5 sm:p-1 transition-all group-hover:shadow-md",
+                                  hasOverlap && "ring-2 ring-yellow-400 ring-offset-1"
+                                )}
+                                style={{
+                                  backgroundColor: colors.bg,
+                                  borderLeft: `3px solid ${colors.border}`,
+                                  color: colors.text
+                                }}
                               >
-                                <div className="text-[10px] sm:text-xs font-semibold truncate leading-tight">
-                                  {event.title}
+                                <div className="flex items-start gap-0.5 sm:gap-1 mb-0.5">
+                                  <div className="flex-shrink-0 mt-0.5">
+                                    {getTypeIcon(event.type)}
+                                  </div>
+                                  <div className="text-[10px] sm:text-xs font-semibold truncate leading-tight flex-1">
+                                    {event.title}
+                                  </div>
+                                  {hasOverlap && (
+                                    <AlertCircle className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-yellow-300 flex-shrink-0" />
+                                  )}
                                 </div>
-                                <div className="text-[9px] sm:text-xs opacity-90 leading-tight hidden sm:block">
-                                  {event.startTime}
+                                <div className="text-[9px] sm:text-xs opacity-90 leading-tight hidden sm:block truncate">
+                                  {event.startTime} - {event.endTime}
                                 </div>
+                                {event.location && (
+                                  <div className="text-[8px] sm:text-xs opacity-75 leading-tight hidden sm:block truncate">
+                                    {event.location}
+                                  </div>
+                                )}
                               </div>
                             </div>
                           );
@@ -163,6 +288,7 @@ export function WeekView({ events, selectedDate, onSlotClick, onEventClick }: We
             ))}
           </div>
         </div>
+      </div>
       </div>
     </div>
   );
