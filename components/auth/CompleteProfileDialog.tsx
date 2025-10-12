@@ -5,7 +5,7 @@
  * Collects required information not provided by OAuth provider
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -15,16 +15,19 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Checkbox } from '@/components/ui/checkbox';
 import { getClient } from '@/lib/supabase/client';
 import { useToast } from '@/lib/hooks/use-toast';
-import { Gender, UserRole } from '@/lib/constants';
+import { Gender, UserRole, TeamLevel } from '@/lib/constants';
+import { Team } from '@/lib/types/database.types';
 
 const profileSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
   lastName: z.string().min(1, 'Last name is required'),
-  gender: z.enum([Gender.MEN, Gender.WOMEN], {
-    required_error: 'Please select a gender',
+  role: z.enum([UserRole.PLAYER, UserRole.CAPTAIN, UserRole.COACH], {
+    required_error: 'Please select your role',
   }),
+  teamIds: z.array(z.string()).optional(),
   phone: z.string().optional(),
 });
 
@@ -41,6 +44,8 @@ export function CompleteProfileDialog({ isOpen, userId, email, onComplete }: Com
   const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [teams, setTeams] = useState<Team[]>([]);
+  const [selectedTeamIds, setSelectedTeamIds] = useState<string[]>([]);
   const supabase = getClient();
 
   const {
@@ -58,7 +63,24 @@ export function CompleteProfileDialog({ isOpen, userId, email, onComplete }: Com
     },
   });
 
-  const selectedGender = watch('gender');
+  const selectedRole = watch('role');
+
+  // Fetch available teams
+  useEffect(() => {
+    const fetchTeams = async () => {
+      const { data } = await supabase
+        .from('teams')
+        .select('*')
+        .eq('is_active', true)
+        .order('name', { ascending: true });
+
+      if (data) {
+        setTeams(data);
+      }
+    };
+
+    fetchTeams();
+  }, [supabase]);
 
   const onSubmit = async (data: ProfileFormData) => {
     setIsLoading(true);

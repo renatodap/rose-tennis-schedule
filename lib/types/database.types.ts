@@ -14,8 +14,8 @@ export interface User {
   first_name: string;
   last_name: string;
   role: UserRole;
-  gender: Gender;
-  team_level: TeamLevel;
+  gender?: Gender; // Nullable - coaches may not have specific gender
+  team_level?: TeamLevel; // Nullable - coaches may not have specific level
   phone?: string;
   created_at: string; // ISO timestamp
   updated_at: string; // ISO timestamp
@@ -176,6 +176,49 @@ export interface FormAnswer {
 }
 
 /**
+ * Team entity (actual teams: JV Men's, Varsity Men's, Varsity Women's)
+ */
+export interface Team {
+  id: string; // UUID
+  name: string;
+  gender: Gender;
+  team_level: TeamLevel;
+  is_active: boolean;
+  created_at: string; // ISO timestamp
+  updated_at: string; // ISO timestamp
+}
+
+/**
+ * User-Team membership (many-to-many)
+ */
+export interface UserTeam {
+  id: string; // UUID
+  user_id: string; // References User.id
+  team_id: string; // References Team.id
+  created_at: string; // ISO timestamp
+}
+
+/**
+ * Event-Team targeting (many-to-many)
+ */
+export interface EventTeam {
+  id: string; // UUID
+  event_id: string; // References Event.id
+  team_id: string; // References Team.id
+  created_at: string; // ISO timestamp
+}
+
+/**
+ * Form-Team targeting (many-to-many)
+ */
+export interface FormTeam {
+  id: string; // UUID
+  form_id: string; // References Form.id
+  team_id: string; // References Team.id
+  created_at: string; // ISO timestamp
+}
+
+/**
  * Database tables type map
  */
 export interface Database {
@@ -230,6 +273,26 @@ export interface Database {
         Row: FormResponse;
         Insert: Omit<FormResponse, 'id' | 'created_at' | 'updated_at'>;
         Update: Partial<Omit<FormResponse, 'id' | 'created_at' | 'updated_at'>>;
+      };
+      teams: {
+        Row: Team;
+        Insert: Omit<Team, 'id' | 'created_at' | 'updated_at'>;
+        Update: Partial<Omit<Team, 'id' | 'created_at' | 'updated_at'>>;
+      };
+      user_teams: {
+        Row: UserTeam;
+        Insert: Omit<UserTeam, 'id' | 'created_at'>;
+        Update: Partial<Omit<UserTeam, 'id' | 'created_at'>>;
+      };
+      event_teams: {
+        Row: EventTeam;
+        Insert: Omit<EventTeam, 'id' | 'created_at'>;
+        Update: Partial<Omit<EventTeam, 'id' | 'created_at'>>;
+      };
+      form_teams: {
+        Row: FormTeam;
+        Insert: Omit<FormTeam, 'id' | 'created_at'>;
+        Update: Partial<Omit<FormTeam, 'id' | 'created_at'>>;
       };
     };
   };
