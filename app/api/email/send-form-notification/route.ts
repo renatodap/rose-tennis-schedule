@@ -59,27 +59,46 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get eligible users based on form filters
-    let userQuery = supabase
-      .from('users')
-      .select('id, first_name, last_name, email')
-      .eq('role', 'player');
+    // Get eligible users by joining form_teams with user_teams and users
+    const { data: formTeamsData, error: formTeamsError } = await supabase
+      .from('form_teams')
+      .select(`
+        team_id,
+        user_teams!inner(
+          user_id,
+          users!inner(
+            id,
+            first_name,
+            last_name,
+            email,
+            role
+          )
+        )
+      `)
+      .eq('form_id', formId);
 
-    // Filter by gender if specified
-    if (form.gender) {
-      userQuery = userQuery.eq('gender', form.gender);
+    if (formTeamsError) {
+      throw formTeamsError;
     }
 
-    // Filter by team level if specified
-    if (form.team_level) {
-      userQuery = userQuery.eq('team_level', form.team_level);
-    }
+    // Extract unique users (a user might be on multiple teams for this form)
+    // Only include players and captains
+    const userMap = new Map();
+    formTeamsData?.forEach((ft: any) => {
+      ft.user_teams.forEach((ut: any) => {
+        const user = ut.users;
+        if ((user.role === 'player' || user.role === 'captain') && !userMap.has(user.id)) {
+          userMap.set(user.id, {
+            id: user.id,
+            first_name: user.first_name,
+            last_name: user.last_name,
+            email: user.email,
+          });
+        }
+      });
+    });
 
-    const { data: eligibleUsers, error: usersError } = await userQuery;
-
-    if (usersError) {
-      throw usersError;
-    }
+    const eligibleUsers = Array.from(userMap.values());
 
     if (!eligibleUsers || eligibleUsers.length === 0) {
       return NextResponse.json({

@@ -66,12 +66,12 @@ export default function AdminFormsPage() {
     }
   }, [forms, getResponseCount]);
 
-  const handleCreateForm = async (formData: any) => {
+  const handleCreateForm = async (formData: any, teamIds?: string[]) => {
     if (!profile) return;
     await createForm({
       ...formData,
       created_by: profile.id,
-    });
+    }, teamIds);
   };
 
   const handleViewResponses = async (form: Form) => {

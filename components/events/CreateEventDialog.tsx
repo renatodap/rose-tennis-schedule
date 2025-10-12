@@ -5,7 +5,7 @@
  * Form to create new team events with all necessary fields
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -22,6 +22,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useEventManagement, CreateEventData } from '@/lib/hooks/useEventManagement';
 import { Loader2 } from 'lucide-react';
 import { dateTimeLocalToISO } from '@/lib/utils/time';
+import { getClient } from '@/lib/supabase/client';
+import { Team } from '@/lib/types/database.types';
 
 interface CreateEventDialogProps {
   open: boolean;
@@ -35,6 +37,9 @@ export function CreateEventDialog({
   onEventCreated,
 }: CreateEventDialogProps) {
   const { createEvent, loading } = useEventManagement();
+  const supabase = getClient();
+  const [teams, setTeams] = useState<Team[]>([]);
+  const [selectedTeamIds, setSelectedTeamIds] = useState<string[]>([]);
   const [formData, setFormData] = useState<CreateEventData>({
     title: '',
     description: '',
@@ -48,17 +53,33 @@ export function CreateEventDialog({
     applies_to_varsity: true,
   });
 
+  // Fetch available teams
+  useEffect(() => {
+    const fetchTeams = async () => {
+      const { data } = await supabase
+        .from('teams')
+        .select('*')
+        .eq('is_active', true)
+        .order('name', { ascending: true });
+
+      if (data) {
+        setTeams(data);
+        // Select all teams by default
+        setSelectedTeamIds(data.map(t => t.id));
+      }
+    };
+
+    if (open) {
+      fetchTeams();
+    }
+  }, [open, supabase]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // Validate that at least one team is selected
-    if (!formData.applies_to_men && !formData.applies_to_women) {
-      alert('Please select at least one gender');
-      return;
-    }
-
-    if (!formData.applies_to_jv && !formData.applies_to_varsity) {
-      alert('Please select at least one team level');
+    if (selectedTeamIds.length === 0) {
+      alert('Please select at least one team');
       return;
     }
 
@@ -69,7 +90,7 @@ export function CreateEventDialog({
       end_datetime: dateTimeLocalToISO(formData.end_datetime),
     };
 
-    const result = await createEvent(eventDataForSubmit);
+    const result = await createEvent(eventDataForSubmit, selectedTeamIds);
 
     if (result) {
       // Reset form
@@ -85,9 +106,18 @@ export function CreateEventDialog({
         applies_to_jv: true,
         applies_to_varsity: true,
       });
+      setSelectedTeamIds([]);
       onOpenChange(false);
       onEventCreated?.();
     }
+  };
+
+  const toggleTeam = (teamId: string) => {
+    setSelectedTeamIds(prev =>
+      prev.includes(teamId)
+        ? prev.filter(id => id !== teamId)
+        : [...prev, teamId]
+    );
   };
 
   return (
@@ -199,70 +229,36 @@ export function CreateEventDialog({
             </RadioGroup>
           </div>
 
-          {/* Applies To - Gender */}
+          {/* Team Selection */}
           <div className="space-y-2">
             <Label>
-              Applies To (Gender) <span className="text-red-500">*</span>
+              Target Teams <span className="text-red-500">*</span>
             </Label>
-            <div className="space-y-2">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="applies_to_men"
-                  checked={formData.applies_to_men}
-                  onCheckedChange={(checked) =>
-                    setFormData({ ...formData, applies_to_men: checked as boolean })
-                  }
-                />
-                <Label htmlFor="applies_to_men" className="font-normal cursor-pointer">
-                  Men&apos;s Team
-                </Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="applies_to_women"
-                  checked={formData.applies_to_women}
-                  onCheckedChange={(checked) =>
-                    setFormData({ ...formData, applies_to_women: checked as boolean })
-                  }
-                />
-                <Label htmlFor="applies_to_women" className="font-normal cursor-pointer">
-                  Women&apos;s Team
-                </Label>
-              </div>
+            <p className="text-xs text-gray-500 mb-2">
+              Select which team(s) this event is for
+            </p>
+            <div className="space-y-2 p-3 border rounded-md">
+              {teams.map((team) => (
+                <div key={team.id} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`team-${team.id}`}
+                    checked={selectedTeamIds.includes(team.id)}
+                    onCheckedChange={() => toggleTeam(team.id)}
+                  />
+                  <Label htmlFor={`team-${team.id}`} className="font-normal cursor-pointer">
+                    {team.name}
+                  </Label>
+                </div>
+              ))}
+              {teams.length === 0 && (
+                <p className="text-sm text-gray-500 italic">Loading teams...</p>
+              )}
             </div>
-          </div>
-
-          {/* Applies To - Level */}
-          <div className="space-y-2">
-            <Label>
-              Applies To (Level) <span className="text-red-500">*</span>
-            </Label>
-            <div className="space-y-2">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="applies_to_jv"
-                  checked={formData.applies_to_jv}
-                  onCheckedChange={(checked) =>
-                    setFormData({ ...formData, applies_to_jv: checked as boolean })
-                  }
-                />
-                <Label htmlFor="applies_to_jv" className="font-normal cursor-pointer">
-                  JV
-                </Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="applies_to_varsity"
-                  checked={formData.applies_to_varsity}
-                  onCheckedChange={(checked) =>
-                    setFormData({ ...formData, applies_to_varsity: checked as boolean })
-                  }
-                />
-                <Label htmlFor="applies_to_varsity" className="font-normal cursor-pointer">
-                  Varsity
-                </Label>
-              </div>
-            </div>
+            {selectedTeamIds.length === 0 && (
+              <p className="text-sm text-red-600">
+                Please select at least one team
+              </p>
+            )}
           </div>
 
           {/* Submit Button */}

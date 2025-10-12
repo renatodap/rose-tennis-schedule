@@ -59,33 +59,46 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get eligible users based on event filters
-    let userQuery = supabase
-      .from('users')
-      .select('id, first_name, last_name, email')
-      .eq('role', 'player');
+    // Get eligible users by joining event_teams with user_teams and users
+    const { data: eventTeamsData, error: eventTeamsError } = await supabase
+      .from('event_teams')
+      .select(`
+        team_id,
+        user_teams!inner(
+          user_id,
+          users!inner(
+            id,
+            first_name,
+            last_name,
+            email,
+            role
+          )
+        )
+      `)
+      .eq('event_id', eventId);
 
-    // Filter by gender
-    const genders = [];
-    if (event.applies_to_men) genders.push('men');
-    if (event.applies_to_women) genders.push('women');
-    if (genders.length > 0) {
-      userQuery = userQuery.in('gender', genders);
+    if (eventTeamsError) {
+      throw eventTeamsError;
     }
 
-    // Filter by team level
-    const levels = [];
-    if (event.applies_to_jv) levels.push('jv');
-    if (event.applies_to_varsity) levels.push('varsity');
-    if (levels.length > 0) {
-      userQuery = userQuery.in('team_level', levels);
-    }
+    // Extract unique users (a user might be on multiple teams for this event)
+    // Only include players and captains
+    const userMap = new Map();
+    eventTeamsData?.forEach((et: any) => {
+      et.user_teams.forEach((ut: any) => {
+        const user = ut.users;
+        if ((user.role === 'player' || user.role === 'captain') && !userMap.has(user.id)) {
+          userMap.set(user.id, {
+            id: user.id,
+            first_name: user.first_name,
+            last_name: user.last_name,
+            email: user.email,
+          });
+        }
+      });
+    });
 
-    const { data: eligibleUsers, error: usersError } = await userQuery;
-
-    if (usersError) {
-      throw usersError;
-    }
+    const eligibleUsers = Array.from(userMap.values());
 
     if (!eligibleUsers || eligibleUsers.length === 0) {
       return NextResponse.json({

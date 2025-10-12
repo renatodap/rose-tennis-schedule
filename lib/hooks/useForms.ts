@@ -31,22 +31,51 @@ export function useForms(user?: User | null) {
     try {
       setLoading(true);
 
-      // Fetch all active forms and filter client-side
-      // This avoids complex OR query issues with Supabase
-      const { data: allFormsData, error: formsError } = await supabase
+      // Get user's team memberships
+      const { data: userTeamsData, error: userTeamsError } = await supabase
+        .from('user_teams')
+        .select('team_id')
+        .eq('user_id', user.id);
+
+      if (userTeamsError) throw userTeamsError;
+
+      const userTeamIds = userTeamsData?.map(ut => ut.team_id) || [];
+
+      if (userTeamIds.length === 0) {
+        // User is not on any teams (e.g., coach), show no forms
+        setForms([]);
+        setResponses([]);
+        setLoading(false);
+        return;
+      }
+
+      // Get forms that target the user's teams
+      const { data: formTeamsData, error: formTeamsError } = await supabase
+        .from('form_teams')
+        .select('form_id')
+        .in('team_id', userTeamIds);
+
+      if (formTeamsError) throw formTeamsError;
+
+      const formIds = formTeamsData?.map(ft => ft.form_id) || [];
+
+      if (formIds.length === 0) {
+        // No forms target user's teams
+        setForms([]);
+        setResponses([]);
+        setLoading(false);
+        return;
+      }
+
+      // Fetch the actual forms
+      const { data: formsData, error: formsError } = await supabase
         .from('forms')
         .select('*')
+        .in('id', formIds)
         .eq('is_active', true)
         .order('due_date', { ascending: true, nullsFirst: false });
 
       if (formsError) throw formsError;
-
-      // Filter forms that match user's gender and team level (or are open to all)
-      const formsData = allFormsData?.filter(form => {
-        const genderMatch = !form.gender || form.gender === user.gender;
-        const teamLevelMatch = !form.team_level || form.team_level === user.team_level;
-        return genderMatch && teamLevelMatch;
-      });
 
       // Fetch user's responses
       const { data: responsesData, error: responsesError } = await supabase

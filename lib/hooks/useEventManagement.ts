@@ -61,7 +61,7 @@ export function useEventManagement() {
   /**
    * Create a new event
    */
-  const createEvent = useCallback(async (eventData: CreateEventData) => {
+  const createEvent = useCallback(async (eventData: CreateEventData, teamIds?: string[]) => {
     if (!profile || !isAdmin) {
       toast({
         title: 'Permission Denied',
@@ -85,6 +85,23 @@ export function useEventManagement() {
 
       if (error) {
         throw error;
+      }
+
+      // Create event_teams entries if teamIds provided
+      if (teamIds && teamIds.length > 0) {
+        const eventTeams = teamIds.map(teamId => ({
+          event_id: data.id,
+          team_id: teamId,
+        }));
+
+        const { error: teamsError } = await supabase
+          .from('event_teams')
+          .insert(eventTeams);
+
+        if (teamsError) {
+          console.error('Error creating event teams:', teamsError);
+          // Don't fail the whole operation
+        }
       }
 
       // Send email notifications to eligible users
@@ -255,43 +272,24 @@ export function useEventManagement() {
     }
 
     try {
-      // Get the event to check which users it applies to
-      const { data: event, error: eventError } = await supabase
-        .from('events')
-        .select('*')
-        .eq('id', eventId)
-        .single();
-
-      if (eventError) {
-        throw eventError;
-      }
-
-      // Build query to get eligible users
-      let userQuery = supabase.from('users').select('id');
-
-      // Filter by gender
-      const genders = [];
-      if (event.applies_to_men) genders.push('men');
-      if (event.applies_to_women) genders.push('women');
-      if (genders.length > 0) {
-        userQuery = userQuery.in('gender', genders);
-      }
-
-      // Filter by team level
-      const levels = [];
-      if (event.applies_to_jv) levels.push('jv');
-      if (event.applies_to_varsity) levels.push('varsity');
-      if (levels.length > 0) {
-        userQuery = userQuery.in('team_level', levels);
-      }
-
-      const { data: eligibleUsers, error: usersError } = await userQuery;
+      // Get eligible users by joining event_teams with user_teams
+      const { data: eligibleUsers, error: usersError } = await supabase
+        .from('event_teams')
+        .select(`
+          team_id,
+          user_teams!inner(user_id)
+        `)
+        .eq('event_id', eventId);
 
       if (usersError) {
         throw usersError;
       }
 
-      const totalUsers = eligibleUsers?.length || 0;
+      // Extract unique user IDs
+      const uniqueUserIds = new Set(
+        eligibleUsers?.flatMap((et: any) => et.user_teams.map((ut: any) => ut.user_id)) || []
+      );
+      const totalUsers = uniqueUserIds.size;
 
       // Get all responses for this event
       const { data: responses, error: responsesError } = await supabase
@@ -333,43 +331,44 @@ export function useEventManagement() {
     }
 
     try {
-      // Get the event to check which users it applies to
-      const { data: event, error: eventError } = await supabase
-        .from('events')
-        .select('*')
-        .eq('id', eventId)
-        .single();
-
-      if (eventError) {
-        throw eventError;
-      }
-
-      // Build query to get eligible users
-      let userQuery = supabase
-        .from('users')
-        .select('id, first_name, last_name, gender, team_level');
-
-      // Filter by gender
-      const genders = [];
-      if (event.applies_to_men) genders.push('men');
-      if (event.applies_to_women) genders.push('women');
-      if (genders.length > 0) {
-        userQuery = userQuery.in('gender', genders);
-      }
-
-      // Filter by team level
-      const levels = [];
-      if (event.applies_to_jv) levels.push('jv');
-      if (event.applies_to_varsity) levels.push('varsity');
-      if (levels.length > 0) {
-        userQuery = userQuery.in('team_level', levels);
-      }
-
-      const { data: eligibleUsers, error: usersError } = await userQuery;
+      // Get eligible users by joining event_teams with user_teams and users
+      const { data: eligibleUsers, error: usersError } = await supabase
+        .from('event_teams')
+        .select(`
+          team_id,
+          user_teams!inner(
+            user_id,
+            users!inner(
+              id,
+              first_name,
+              last_name,
+              gender,
+              team_level
+            )
+          )
+        `)
+        .eq('event_id', eventId);
 
       if (usersError) {
         throw usersError;
       }
+
+      // Extract unique users (a user might be on multiple teams for this event)
+      const userMap = new Map();
+      eligibleUsers?.forEach((et: any) => {
+        et.user_teams.forEach((ut: any) => {
+          const user = ut.users;
+          if (!userMap.has(user.id)) {
+            userMap.set(user.id, {
+              id: user.id,
+              first_name: user.first_name,
+              last_name: user.last_name,
+              gender: user.gender,
+              team_level: user.team_level,
+            });
+          }
+        });
+      });
 
       // Get all responses for this event
       const { data: responses, error: responsesError } = await supabase
@@ -387,7 +386,7 @@ export function useEventManagement() {
       );
 
       // Combine user data with responses
-      const userRsvps: UserRsvp[] = (eligibleUsers || []).map(user => ({
+      const userRsvps: UserRsvp[] = Array.from(userMap.values()).map(user => ({
         user_id: user.id,
         first_name: user.first_name,
         last_name: user.last_name,

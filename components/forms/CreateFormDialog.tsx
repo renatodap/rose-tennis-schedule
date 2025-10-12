@@ -5,9 +5,10 @@
  * Steps: Basic Info -> Questions -> Target Audience
  */
 
-import { useState } from 'react';
-import { FormQuestion } from '@/lib/types/database.types';
+import { useState, useEffect } from 'react';
+import { FormQuestion, Team } from '@/lib/types/database.types';
 import { Gender, TeamLevel } from '@/lib/constants';
+import { getClient } from '@/lib/supabase/client';
 import {
   Dialog,
   DialogContent,
@@ -25,6 +26,7 @@ import { FormBuilder } from './FormBuilder';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useToast } from '@/lib/hooks/use-toast';
 import { dateTimeLocalToISO } from '@/lib/utils/time';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface CreateFormDialogProps {
   open: boolean;
@@ -37,7 +39,7 @@ interface CreateFormDialogProps {
     gender: Gender | null;
     team_level: TeamLevel | null;
     is_active: boolean;
-  }) => Promise<void>;
+  }, teamIds?: string[]) => Promise<void>;
 }
 
 export function CreateFormDialog({ open, onOpenChange, onSubmit }: CreateFormDialogProps) {
@@ -50,6 +52,30 @@ export function CreateFormDialog({ open, onOpenChange, onSubmit }: CreateFormDia
   const [teamLevel, setTeamLevel] = useState<TeamLevel | 'all'>('all');
   const [submitting, setSubmitting] = useState(false);
   const { toast } = useToast();
+  const supabase = getClient();
+  const [teams, setTeams] = useState<Team[]>([]);
+  const [selectedTeamIds, setSelectedTeamIds] = useState<string[]>([]);
+
+  // Fetch available teams
+  useEffect(() => {
+    const fetchTeams = async () => {
+      const { data } = await supabase
+        .from('teams')
+        .select('*')
+        .eq('is_active', true)
+        .order('name', { ascending: true });
+
+      if (data) {
+        setTeams(data);
+        // Select all teams by default
+        setSelectedTeamIds(data.map(t => t.id));
+      }
+    };
+
+    if (open) {
+      fetchTeams();
+    }
+  }, [open, supabase]);
 
   const resetForm = () => {
     setStep(1);
@@ -59,6 +85,7 @@ export function CreateFormDialog({ open, onOpenChange, onSubmit }: CreateFormDia
     setQuestions([]);
     setGender('all');
     setTeamLevel('all');
+    setSelectedTeamIds([]);
   };
 
   const handleNext = () => {
@@ -89,6 +116,16 @@ export function CreateFormDialog({ open, onOpenChange, onSubmit }: CreateFormDia
   };
 
   const handleSubmit = async (isActive: boolean) => {
+    // Validate that at least one team is selected
+    if (selectedTeamIds.length === 0) {
+      toast({
+        title: 'Team selection required',
+        description: 'Please select at least one team.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     try {
       setSubmitting(true);
       await onSubmit({
@@ -99,7 +136,7 @@ export function CreateFormDialog({ open, onOpenChange, onSubmit }: CreateFormDia
         gender: gender === 'all' ? null : gender,
         team_level: teamLevel === 'all' ? null : teamLevel,
         is_active: isActive,
-      });
+      }, selectedTeamIds);
       resetForm();
       onOpenChange(false);
     } catch (error) {
@@ -107,6 +144,14 @@ export function CreateFormDialog({ open, onOpenChange, onSubmit }: CreateFormDia
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const toggleTeam = (teamId: string) => {
+    setSelectedTeamIds(prev =>
+      prev.includes(teamId)
+        ? prev.filter(id => id !== teamId)
+        : [...prev, teamId]
+    );
   };
 
   const renderStep = () => {
@@ -155,31 +200,36 @@ export function CreateFormDialog({ open, onOpenChange, onSubmit }: CreateFormDia
       case 3:
         return (
           <div className="space-y-4">
-            <div>
-              <Label htmlFor="gender">Target Gender</Label>
-              <Select value={gender} onValueChange={(val) => setGender(val as Gender | 'all')}>
-                <SelectTrigger id="gender">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Teams</SelectItem>
-                  <SelectItem value={Gender.MEN}>Men's Team</SelectItem>
-                  <SelectItem value={Gender.WOMEN}>Women's Team</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label htmlFor="team_level">Target Team Level</Label>
-              <Select value={teamLevel} onValueChange={(val) => setTeamLevel(val as TeamLevel | 'all')}>
-                <SelectTrigger id="team_level">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Levels</SelectItem>
-                  <SelectItem value={TeamLevel.JV}>JV</SelectItem>
-                  <SelectItem value={TeamLevel.VARSITY}>Varsity</SelectItem>
-                </SelectContent>
-              </Select>
+            {/* Team Selection */}
+            <div className="space-y-2">
+              <Label>
+                Target Teams <span className="text-red-500">*</span>
+              </Label>
+              <p className="text-xs text-gray-500 mb-2">
+                Select which team(s) this form is for
+              </p>
+              <div className="space-y-2 p-3 border rounded-md">
+                {teams.map((team) => (
+                  <div key={team.id} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`team-${team.id}`}
+                      checked={selectedTeamIds.includes(team.id)}
+                      onCheckedChange={() => toggleTeam(team.id)}
+                    />
+                    <Label htmlFor={`team-${team.id}`} className="font-normal cursor-pointer">
+                      {team.name}
+                    </Label>
+                  </div>
+                ))}
+                {teams.length === 0 && (
+                  <p className="text-sm text-gray-500 italic">Loading teams...</p>
+                )}
+              </div>
+              {selectedTeamIds.length === 0 && (
+                <p className="text-sm text-red-600">
+                  Please select at least one team
+                </p>
+              )}
             </div>
 
             <div className="border-t pt-4 mt-6">
@@ -203,9 +253,13 @@ export function CreateFormDialog({ open, onOpenChange, onSubmit }: CreateFormDia
                   <span className="font-medium">Questions:</span> {questions.length}
                 </div>
                 <div>
-                  <span className="font-medium">Target:</span>{' '}
-                  {gender === 'all' ? 'All Genders' : gender} |{' '}
-                  {teamLevel === 'all' ? 'All Levels' : teamLevel}
+                  <span className="font-medium">Target Teams:</span>{' '}
+                  {selectedTeamIds.length === teams.length
+                    ? 'All Teams'
+                    : teams
+                        .filter(t => selectedTeamIds.includes(t.id))
+                        .map(t => t.name)
+                        .join(', ')}
                 </div>
               </div>
             </div>

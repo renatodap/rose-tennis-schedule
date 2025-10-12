@@ -50,7 +50,7 @@ export function useFormManagement() {
   /**
    * Create a new form
    */
-  const createForm = async (formData: Omit<Form, 'id' | 'created_at' | 'updated_at'>) => {
+  const createForm = async (formData: Omit<Form, 'id' | 'created_at' | 'updated_at'>, teamIds?: string[]) => {
     try {
       const { data, error } = await supabase
         .from('forms')
@@ -59,6 +59,23 @@ export function useFormManagement() {
         .single();
 
       if (error) throw error;
+
+      // Create form_teams entries if teamIds provided
+      if (teamIds && teamIds.length > 0) {
+        const formTeams = teamIds.map(teamId => ({
+          form_id: data.id,
+          team_id: teamId,
+        }));
+
+        const { error: teamsError } = await supabase
+          .from('form_teams')
+          .insert(formTeams);
+
+        if (teamsError) {
+          console.error('Error creating form teams:', teamsError);
+          // Don't fail the whole operation
+        }
+      }
 
       // Send email notifications to eligible users
       try {
