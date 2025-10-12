@@ -45,7 +45,8 @@ export default function ProfilePage() {
     }
   };
 
-  const getGenderLabel = (gender: Gender) => {
+  const getGenderLabel = (gender?: Gender) => {
+    if (!gender) return 'Not specified';
     return gender === Gender.MEN ? "Men's Team" : "Women's Team";
   };
 
@@ -85,9 +86,11 @@ export default function ProfilePage() {
                 >
                   {getRoleLabel(profile.role)}
                 </span>
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
-                  {getGenderLabel(profile.gender)}
-                </span>
+                {profile.gender && (
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
+                    {getGenderLabel(profile.gender)}
+                  </span>
+                )}
               </div>
             </div>
           </div>

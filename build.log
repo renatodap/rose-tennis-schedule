@@ -1,0 +1,71 @@
+
+> rose-hulman-tennis@1.0.0 build
+> next build
+
+   ▲ Next.js 14.1.0
+   - Environments: .env
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+
+./app/(dashboard)/admin/events/page.tsx
+37:6  Warning: React Hook useEffect has a missing dependency: 'loadEvents'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/availability/AvailabilityCalendar.tsx
+94:6  Warning: React Hook useEffect has a missing dependency: 'supabase'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./lib/hooks/useAvailability.ts
+308:6  Warning: React Hook useEffect has a missing dependency: 'fetchAvailability'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+333:6  Warning: React Hook useEffect has missing dependencies: 'fetchAvailability' and 'supabase'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+
+./lib/hooks/useAvailabilityDashboard.ts
+208:6  Warning: React Hook useCallback has a missing dependency: 'practiceTimeSlots'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./lib/hooks/useBlockers.ts
+317:6  Warning: React Hook useEffect has a missing dependency: 'fetchBlockers'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+359:6  Warning: React Hook useEffect has missing dependencies: 'fetchBlockers' and 'supabase'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+
+./lib/hooks/useUnifiedSchedule.ts
+182:6  Warning: React Hook useCallback has missing dependencies: 'quarter' and 'year'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/basic-features/eslint#disabling-rules
+   Collecting page data ...
+   Generating static pages (0/20) ...
+   Generating static pages (5/20) 
+   Generating static pages (10/20) 
+   Generating static pages (15/20) 
+ ✓ Generating static pages (20/20) 
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                              Size     First Load JS
+┌ λ /                                    139 B          84.4 kB
+├ ○ /_not-found                          882 B          85.1 kB
+├ ○ /admin                               6.21 kB         152 kB
+├ ○ /admin/events                        9.84 kB         199 kB
+├ ○ /admin/forms                         7.85 kB         197 kB
+├ ○ /admin/reports                       7.2 kB          190 kB
+├ ○ /admin/users                         7.38 kB         191 kB
+├ λ /api/email/send-event-notification   0 B                0 B
+├ λ /api/email/send-form-notification    0 B                0 B
+├ λ /auth/callback                       0 B                0 B
+├ ○ /dashboard                           4.83 kB         151 kB
+├ ○ /events                              7.73 kB         194 kB
+├ ○ /forgot-password                     3.98 kB         172 kB
+├ ○ /forms                               7.62 kB         176 kB
+├ ○ /profile                             6.51 kB         146 kB
+├ ○ /schedule                            11.4 kB         194 kB
+├ ○ /sign-in                             3.81 kB         172 kB
+└ ○ /sign-up                             8.16 kB         179 kB
++ First Load JS shared by all            84.2 kB
+  ├ chunks/69-9e34ce4faed97e79.js        28.9 kB
+  ├ chunks/fd9d1056-76286ddac84065c4.js  53.4 kB
+  └ other shared chunks (total)          1.97 kB
+
+
+ƒ Middleware                             128 kB
+
+○  (Static)   prerendered as static content
+λ  (Dynamic)  server-rendered on demand using Node.js
+
