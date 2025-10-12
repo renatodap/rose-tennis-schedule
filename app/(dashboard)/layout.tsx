@@ -11,6 +11,7 @@ import Link from 'next/link';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useUser } from '@/lib/hooks/useUser';
 import { Button } from '@/components/ui/button';
+import { CompleteProfileDialog } from '@/components/auth/CompleteProfileDialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -39,8 +40,8 @@ export default function DashboardLayout({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { isAuthenticated, loading: authLoading, signOut } = useAuth();
-  const { profile, loading: profileLoading } = useUser();
+  const { isAuthenticated, loading: authLoading, signOut, user: authUser } = useAuth();
+  const { profile, loading: profileLoading, refresh } = useUser();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Redirect to sign in if not authenticated
@@ -67,7 +68,30 @@ export default function DashboardLayout({
   }
 
   // Don't render if not authenticated
-  if (!isAuthenticated || !profile) {
+  if (!isAuthenticated) {
+    return null;
+  }
+
+  // Show profile completion dialog if authenticated but no profile
+  if (!profile && authUser) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <CompleteProfileDialog
+          isOpen={true}
+          userId={authUser.id}
+          email={authUser.email || ''}
+          onComplete={async () => {
+            // Refresh user data after profile creation
+            await refresh();
+            router.refresh();
+          }}
+        />
+      </div>
+    );
+  }
+
+  // At this point, profile must exist (TypeScript type guard)
+  if (!profile) {
     return null;
   }
 

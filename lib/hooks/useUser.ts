@@ -43,13 +43,19 @@ export function useUser() {
           .from('users')
           .select('*')
           .eq('id', authUser!.id)
-          .single();
+          .maybeSingle();
 
         if (fetchError) {
           throw fetchError;
         }
 
-        setProfile(data);
+        // Profile exists
+        if (data) {
+          setProfile(data);
+        } else {
+          // Profile doesn't exist - user needs to complete setup
+          setProfile(null);
+        }
       } catch (err) {
         console.error('Error fetching user profile:', err);
         setError(err as Error);
@@ -75,7 +81,7 @@ export function useUser() {
         .from('users')
         .select('*')
         .eq('id', authUser.id)
-        .single();
+        .maybeSingle();
 
       if (fetchError) {
         throw fetchError;
