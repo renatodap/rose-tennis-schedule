@@ -152,46 +152,48 @@ function hasConflict(event: CalendarEvent, allEvents: CalendarEvent[]): boolean 
 export function WeekView({ events, selectedDate, onSlotClick, onEventClick, showLegend = true }: WeekViewProps) {
   return (
     <div className="flex flex-col h-full">
-      {/* Legend */}
+      {/* Legend - Compact */}
       {showLegend && (
-        <div className="mb-3 flex flex-wrap gap-3 sm:gap-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
-          <div className="flex items-center gap-1.5">
-            <div className="flex items-center justify-center w-5 h-5 rounded" style={{ backgroundColor: BRAND_COLORS.PRIMARY }}>
-              <GraduationCap className="h-3 w-3 text-white" />
+        <div className="mb-2 flex flex-wrap gap-1.5 sm:gap-2 p-2 bg-gray-50 rounded-lg border border-gray-200 text-[10px] sm:text-xs">
+          <div className="flex items-center gap-1">
+            <div className="flex items-center justify-center w-4 h-4 sm:w-4 sm:h-4 rounded" style={{ backgroundColor: BRAND_COLORS.PRIMARY }}>
+              <GraduationCap className="h-2 w-2 sm:h-2.5 sm:w-2.5 text-white" />
             </div>
-            <span className="text-xs sm:text-sm font-medium text-gray-700">Class</span>
+            <span className="font-medium text-gray-700">Class</span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <div className="flex items-center justify-center w-5 h-5 rounded bg-green-600">
-              <Clock className="h-3 w-3 text-white" />
+          <div className="flex items-center gap-1">
+            <div className="flex items-center justify-center w-4 h-4 rounded bg-green-600">
+              <Clock className="h-2 w-2 sm:h-2.5 sm:w-2.5 text-white" />
             </div>
-            <span className="text-xs sm:text-sm font-medium text-gray-700">Available</span>
+            <span className="font-medium text-gray-700">Available</span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <div className="flex items-center justify-center w-5 h-5 rounded bg-orange-600">
-              <Ban className="h-3 w-3 text-white" />
+          <div className="flex items-center gap-1">
+            <div className="flex items-center justify-center w-4 h-4 rounded bg-orange-600">
+              <Ban className="h-2 w-2 sm:h-2.5 sm:w-2.5 text-white" />
             </div>
-            <span className="text-xs sm:text-sm font-medium text-gray-700">Blocker</span>
+            <span className="font-medium text-gray-700">Blocker</span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-5 h-5 rounded bg-blue-600" />
-            <span className="text-xs sm:text-sm font-medium text-gray-700">Event (No Response)</span>
+          <span className="text-gray-500 hidden sm:inline">|</span>
+          <span className="font-semibold text-gray-700 hidden sm:inline">Events:</span>
+          <div className="flex items-center gap-1">
+            <div className="w-4 h-4 rounded bg-blue-600" />
+            <span className="font-medium text-gray-700">No RSVP</span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-5 h-5 rounded bg-green-600" />
-            <span className="text-xs sm:text-sm font-medium text-gray-700">Event (Going)</span>
+          <div className="flex items-center gap-1">
+            <div className="w-4 h-4 rounded bg-green-600" />
+            <span className="font-medium text-gray-700">Going</span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-5 h-5 rounded bg-amber-500" />
-            <span className="text-xs sm:text-sm font-medium text-gray-700">Event (Maybe)</span>
+          <div className="flex items-center gap-1">
+            <div className="w-4 h-4 rounded bg-amber-500" />
+            <span className="font-medium text-gray-700">Maybe</span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-5 h-5 rounded bg-red-600" />
-            <span className="text-xs sm:text-sm font-medium text-gray-700">Event (Not Going)</span>
+          <div className="flex items-center gap-1">
+            <div className="w-4 h-4 rounded bg-red-600" />
+            <span className="font-medium text-gray-700">Not Going</span>
           </div>
-          <div className="flex items-center gap-1.5 ml-auto">
-            <AlertCircle className="h-4 w-4 text-yellow-600" />
-            <span className="text-xs sm:text-sm font-medium text-gray-700">Conflict</span>
+          <div className="flex items-center gap-1 sm:ml-auto">
+            <AlertCircle className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-yellow-600" />
+            <span className="font-medium text-gray-700">Conflict</span>
           </div>
         </div>
       )}
