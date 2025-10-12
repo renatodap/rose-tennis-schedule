@@ -11,6 +11,8 @@ import { PracticeAvailability } from '@/lib/types/database.types';
 import { AvailabilityStatus } from '@/lib/constants';
 import { useAuth } from './useAuth';
 import { toast } from './use-toast';
+import { getTodayDateISO } from '@/lib/utils/time';
+import { addDays, parseISO, format } from 'date-fns';
 
 export interface AvailabilityInput {
   date: string;
@@ -42,11 +44,11 @@ export function useAvailability() {
 
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      const { data, error} = await supabase
         .from('practice_availability')
         .select('*')
         .eq('user_id', user.id)
-        .gte('date', new Date().toISOString().split('T')[0]) // Only future/today
+        .gte('date', getTodayDateISO()) // Only future/today in app timezone
         .order('date', { ascending: true });
 
       if (error) throw error;
@@ -126,13 +128,15 @@ export function useAvailability() {
     }
 
     try {
-      // Generate all dates in range
+      // Generate all dates in range (using date-fns to avoid timezone issues)
       const dates: string[] = [];
-      const start = new Date(range.start_date);
-      const end = new Date(range.end_date);
+      const start = parseISO(range.start_date);
+      const end = parseISO(range.end_date);
 
-      for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-        dates.push(d.toISOString().split('T')[0]);
+      let currentDate = start;
+      while (currentDate <= end) {
+        dates.push(format(currentDate, 'yyyy-MM-dd'));
+        currentDate = addDays(currentDate, 1);
       }
 
       // Create availability entries for all dates

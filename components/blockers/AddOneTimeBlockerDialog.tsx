@@ -20,6 +20,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useBlockers } from '@/lib/hooks/useBlockers';
 import { Loader2 } from 'lucide-react';
+import { combineDateTimeForStorage } from '@/lib/utils/time';
 
 interface AddOneTimeBlockerDialogProps {
   open: boolean;
@@ -58,9 +59,9 @@ export function AddOneTimeBlockerDialog({
     setIsSubmitting(true);
 
     try {
-      // Combine date and times into ISO datetimes
-      const startDatetime = `${date}T${startTime}:00`;
-      const endDatetime = `${date}T${endTime}:00`;
+      // Combine date and times into ISO datetimes with timezone conversion
+      const startDatetime = combineDateTimeForStorage(date, startTime);
+      const endDatetime = combineDateTimeForStorage(date, endTime);
 
       await addOneTimeBlocker({
         start_datetime: startDatetime,

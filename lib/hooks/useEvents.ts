@@ -8,6 +8,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { getClient } from '../supabase/client';
 import { useUser } from './useUser';
+import { getCurrentDateTimeISO } from '@/lib/utils/time';
 
 export interface Event {
   id: string;
@@ -121,7 +122,7 @@ export function useEvents() {
    * Get upcoming events (start_datetime >= now)
    */
   const getUpcomingEvents = useCallback(() => {
-    const now = new Date().toISOString();
+    const now = getCurrentDateTimeISO();
     return events.filter(event => event.start_datetime >= now);
   }, [events]);
 
@@ -129,7 +130,7 @@ export function useEvents() {
    * Get past events (start_datetime < now)
    */
   const getPastEvents = useCallback(() => {
-    const now = new Date().toISOString();
+    const now = getCurrentDateTimeISO();
     return events.filter(event => event.start_datetime < now);
   }, [events]);
 

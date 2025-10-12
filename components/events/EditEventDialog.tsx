@@ -32,7 +32,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useEventManagement, UpdateEventData } from '@/lib/hooks/useEventManagement';
 import { Event } from '@/lib/hooks/useEvents';
 import { Loader2, Trash2 } from 'lucide-react';
-import { format } from 'date-fns';
+import { dateTimeLocalToISO, isoToDateTimeLocal } from '@/lib/utils/time';
 
 interface EditEventDialogProps {
   event: Event | null;
@@ -67,16 +67,13 @@ export function EditEventDialog({
 
   useEffect(() => {
     if (event && open) {
-      // Format datetime for input fields
-      const startDatetime = new Date(event.start_datetime);
-      const endDatetime = new Date(event.end_datetime);
-
+      // Convert ISO datetime from DB to datetime-local format for input fields
       setFormData({
         id: event.id,
         title: event.title,
         description: event.description || '',
-        start_datetime: format(startDatetime, "yyyy-MM-dd'T'HH:mm"),
-        end_datetime: format(endDatetime, "yyyy-MM-dd'T'HH:mm"),
+        start_datetime: isoToDateTimeLocal(event.start_datetime),
+        end_datetime: isoToDateTimeLocal(event.end_datetime),
         location: event.location || '',
         event_type: event.event_type,
         applies_to_men: event.applies_to_men,
@@ -101,7 +98,14 @@ export function EditEventDialog({
       return;
     }
 
-    const success = await updateEvent(formData);
+    // Convert datetime-local to ISO for storage
+    const eventDataForSubmit: UpdateEventData = {
+      ...formData,
+      start_datetime: formData.start_datetime ? dateTimeLocalToISO(formData.start_datetime) : undefined,
+      end_datetime: formData.end_datetime ? dateTimeLocalToISO(formData.end_datetime) : undefined,
+    };
+
+    const success = await updateEvent(eventDataForSubmit);
 
     if (success) {
       onOpenChange(false);

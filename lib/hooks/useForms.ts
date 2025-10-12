@@ -9,6 +9,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { getClient } from '../supabase/client';
 import { Form, FormResponse, User } from '../types/database.types';
 import { useToast } from './use-toast';
+import { getCurrentDateTimeISO } from '@/lib/utils/time';
 
 export function useForms(user?: User | null) {
   const [forms, setForms] = useState<Form[]>([]);
@@ -84,7 +85,7 @@ export function useForms(user?: User | null) {
           .from('form_responses')
           .update({
             answers,
-            submitted_at: new Date().toISOString(),
+            submitted_at: getCurrentDateTimeISO(),
           })
           .eq('id', existingResponse.id);
 
@@ -97,7 +98,7 @@ export function useForms(user?: User | null) {
             form_id: formId,
             user_id: user.id,
             answers,
-            submitted_at: new Date().toISOString(),
+            submitted_at: getCurrentDateTimeISO(),
           });
 
         if (error) throw error;

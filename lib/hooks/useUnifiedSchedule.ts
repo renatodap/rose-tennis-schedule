@@ -12,6 +12,7 @@ import { useAvailability } from './useAvailability';
 import { useBlockers } from './useBlockers';
 import { CalendarEvent } from '@/components/calendar/WeekView';
 import { format, addDays, parseISO } from 'date-fns';
+import { combineDateTimeForStorage } from '@/lib/utils/time';
 
 export interface UnifiedScheduleItem {
   id: string;
@@ -154,8 +155,8 @@ export function useUnifiedSchedule({ quarter, year }: UseUnifiedScheduleProps) {
         const dateStr = format(currentDate, 'yyyy-MM-dd');
         promises.push(
           addOneTimeBlocker({
-            start_datetime: `${dateStr}T${data.startTime}:00`,
-            end_datetime: `${dateStr}T${data.endTime}:00`,
+            start_datetime: combineDateTimeForStorage(dateStr, data.startTime),
+            end_datetime: combineDateTimeForStorage(dateStr, data.endTime),
             title: data.reason || 'Busy',
             description: undefined,
           })
@@ -166,8 +167,8 @@ export function useUnifiedSchedule({ quarter, year }: UseUnifiedScheduleProps) {
       await Promise.all(promises);
     } else if (data.date) {
       await addOneTimeBlocker({
-        start_datetime: `${data.date}T${data.startTime}:00`,
-        end_datetime: `${data.date}T${data.endTime}:00`,
+        start_datetime: combineDateTimeForStorage(data.date, data.startTime),
+        end_datetime: combineDateTimeForStorage(data.date, data.endTime),
         title: data.reason || 'Busy',
         description: undefined,
       });

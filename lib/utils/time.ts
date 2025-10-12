@@ -236,3 +236,92 @@ export function timeRangesOverlap(
 ): boolean {
   return compareTime(start1, end2) < 0 && compareTime(start2, end1) < 0;
 }
+
+/**
+ * Converts a datetime-local input value to ISO datetime string in app timezone
+ * HTML datetime-local inputs are always in the user's local timezone,
+ * so we need to treat the value as if it's already in the app timezone
+ *
+ * @param datetimeLocal - Value from datetime-local input (YYYY-MM-DDTHH:MM format)
+ * @returns ISO datetime string that will be stored in database
+ *
+ * @example
+ * // User enters "2025-08-18T15:30" in datetime-local input
+ * dateTimeLocalToISO("2025-08-18T15:30") // returns "2025-08-18T15:30:00"
+ */
+export function dateTimeLocalToISO(datetimeLocal: string): string {
+  // datetime-local format is "YYYY-MM-DDTHH:MM"
+  // We treat this as a time in the app timezone and convert to UTC for storage
+  if (!datetimeLocal) return '';
+
+  // Add seconds if not present
+  const withSeconds = datetimeLocal.includes(':') && datetimeLocal.split(':').length === 2
+    ? `${datetimeLocal}:00`
+    : datetimeLocal;
+
+  // Parse as if it's in app timezone
+  const dateInAppTz = parseISO(withSeconds);
+  // Convert to UTC for database storage
+  const utcDate = fromAppTimezone(dateInAppTz);
+
+  return format(utcDate, TIME_FORMATS.ISO_DATETIME);
+}
+
+/**
+ * Converts an ISO datetime string from database to datetime-local format for input
+ * Database stores in UTC, we need to show in app timezone
+ *
+ * @param isoDatetime - ISO datetime string from database
+ * @returns Datetime string in format for datetime-local input (YYYY-MM-DDTHH:MM)
+ *
+ * @example
+ * // Database has "2025-08-18T19:30:00Z" (UTC)
+ * isoToDateTimeLocal("2025-08-18T19:30:00Z") // returns "2025-08-18T15:30" (Indiana time)
+ */
+export function isoToDateTimeLocal(isoDatetime: string): string {
+  if (!isoDatetime) return '';
+
+  const dateObj = typeof isoDatetime === 'string' ? parseISO(isoDatetime) : isoDatetime;
+  const zonedDate = toAppTimezone(dateObj);
+
+  // datetime-local format requires "YYYY-MM-DDTHH:MM" (no seconds, no timezone)
+  return format(zonedDate, "yyyy-MM-dd'T'HH:mm");
+}
+
+/**
+ * Creates an ISO datetime string for the current moment in app timezone
+ * Use this instead of new Date().toISOString() to ensure consistent timezone handling
+ *
+ * @returns Current datetime in ISO format in app timezone
+ */
+export function getCurrentDateTimeISO(): string {
+  const now = new Date();
+  const zonedNow = toAppTimezone(now);
+  return format(zonedNow, TIME_FORMATS.ISO_DATETIME);
+}
+
+/**
+ * Creates an ISO date string (YYYY-MM-DD) for today in app timezone
+ * Use this instead of new Date().toISOString().split('T')[0]
+ *
+ * @returns Today's date in YYYY-MM-DD format in app timezone
+ */
+export function getTodayDateISO(): string {
+  return getCurrentDate();
+}
+
+/**
+ * Combines a date string and time string into ISO datetime for database storage
+ * Treats the input as if it's in the app timezone and converts to UTC
+ *
+ * @param date - ISO date string (YYYY-MM-DD)
+ * @param time - Time string in HH:MM format
+ * @returns ISO datetime string ready for database storage
+ *
+ * @example
+ * combineDateTimeForStorage("2025-08-18", "15:30") // returns ISO datetime in UTC
+ */
+export function combineDateTimeForStorage(date: string, time: string): string {
+  const datetimeLocal = `${date}T${time}`;
+  return dateTimeLocalToISO(datetimeLocal);
+}

@@ -21,6 +21,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useEventManagement, CreateEventData } from '@/lib/hooks/useEventManagement';
 import { Loader2 } from 'lucide-react';
+import { dateTimeLocalToISO } from '@/lib/utils/time';
 
 interface CreateEventDialogProps {
   open: boolean;
@@ -61,7 +62,14 @@ export function CreateEventDialog({
       return;
     }
 
-    const result = await createEvent(formData);
+    // Convert datetime-local to ISO for storage
+    const eventDataForSubmit: CreateEventData = {
+      ...formData,
+      start_datetime: dateTimeLocalToISO(formData.start_datetime),
+      end_datetime: dateTimeLocalToISO(formData.end_datetime),
+    };
+
+    const result = await createEvent(eventDataForSubmit);
 
     if (result) {
       // Reset form

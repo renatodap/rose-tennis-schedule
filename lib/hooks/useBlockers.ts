@@ -10,6 +10,7 @@ import { createClient } from '@/lib/supabase/client';
 import { RecurringBlocker, OneTimeBlocker } from '@/lib/types/database.types';
 import { useAuth } from './useAuth';
 import { toast } from './use-toast';
+import { getCurrentDateTimeISO } from '@/lib/utils/time';
 
 export interface RecurringBlockerInput {
   day_of_week: number;
@@ -55,7 +56,7 @@ export function useBlockers() {
       if (recurringError) throw recurringError;
 
       // Fetch one-time blockers (only future ones)
-      const now = new Date().toISOString();
+      const now = getCurrentDateTimeISO();
       const { data: oneTime, error: oneTimeError } = await supabase
         .from('one_time_blockers')
         .select('*')

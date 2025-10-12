@@ -9,6 +9,7 @@ import { useState, useCallback } from 'react';
 import { getClient } from '../supabase/client';
 import { useUser } from './useUser';
 import { toast } from './use-toast';
+import { getCurrentDateTimeISO } from '@/lib/utils/time';
 
 export type RsvpResponse = 'going' | 'not_going' | 'maybe' | 'no_response';
 
@@ -42,7 +43,7 @@ export function useEventRsvp() {
           event_id: eventId,
           user_id: profile.id,
           response,
-          response_datetime: new Date().toISOString(),
+          response_datetime: getCurrentDateTimeISO(),
         }, {
           onConflict: 'event_id,user_id',
         });

@@ -24,6 +24,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { FormBuilder } from './FormBuilder';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useToast } from '@/lib/hooks/use-toast';
+import { dateTimeLocalToISO } from '@/lib/utils/time';
 
 interface CreateFormDialogProps {
   open: boolean;
@@ -93,7 +94,7 @@ export function CreateFormDialog({ open, onOpenChange, onSubmit }: CreateFormDia
       await onSubmit({
         title,
         description,
-        due_date: dueDate,
+        due_date: dueDate ? dateTimeLocalToISO(dueDate) : '',
         questions,
         gender: gender === 'all' ? null : gender,
         team_level: teamLevel === 'all' ? null : teamLevel,
