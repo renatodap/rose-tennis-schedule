@@ -17,6 +17,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/lib/hooks/use-toast';
 import { getClient } from '@/lib/supabase/client';
 import { BRAND_COLORS } from '@/lib/constants';
+import { MicrosoftSignInButton } from '@/components/auth/MicrosoftSignInButton';
 
 // Form validation schema
 const signInSchema = z.object({
@@ -83,6 +84,21 @@ export default function SignInPage() {
         <p className="text-sm text-gray-600">
           Enter your credentials to access your account
         </p>
+      </div>
+
+      {/* Microsoft OAuth button */}
+      <div className="space-y-3">
+        <MicrosoftSignInButton mode="signin" />
+
+        {/* Divider */}
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-white px-2 text-gray-500">Or continue with email</span>
+          </div>
+        </div>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

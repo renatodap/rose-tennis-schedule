@@ -18,6 +18,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/lib/hooks/use-toast';
 import { getClient } from '@/lib/supabase/client';
 import { BRAND_COLORS, Gender, UserRole, TeamLevel } from '@/lib/constants';
+import { MicrosoftSignInButton } from '@/components/auth/MicrosoftSignInButton';
 
 // Form validation schema
 const signUpSchema = z.object({
@@ -140,6 +141,21 @@ export default function SignUpPage() {
         <p className="text-sm text-gray-600">
           Join the Rose-Hulman Tennis team
         </p>
+      </div>
+
+      {/* Microsoft OAuth button */}
+      <div className="space-y-3">
+        <MicrosoftSignInButton mode="signup" />
+
+        {/* Divider */}
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-white px-2 text-gray-500">Or sign up with email</span>
+          </div>
+        </div>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
