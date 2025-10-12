@@ -54,7 +54,6 @@ export function CompleteProfileDialog({ isOpen, userId, email, onComplete }: Com
     defaultValues: {
       firstName: '',
       lastName: '',
-      gender: undefined,
       phone: '',
     },
   });
@@ -65,8 +64,8 @@ export function CompleteProfileDialog({ isOpen, userId, email, onComplete }: Com
     setIsLoading(true);
 
     try {
-      // Create user profile
-      const { error: profileError } = await supabase.from('users').insert({
+      // Try to upsert (insert or update) the user profile
+      const { error: profileError } = await supabase.from('users').upsert({
         id: userId,
         email,
         first_name: data.firstName,
@@ -74,6 +73,8 @@ export function CompleteProfileDialog({ isOpen, userId, email, onComplete }: Com
         gender: data.gender,
         role: UserRole.PLAYER,
         phone_number: data.phone || null,
+      }, {
+        onConflict: 'id'
       });
 
       if (profileError) {
@@ -170,7 +171,7 @@ export function CompleteProfileDialog({ isOpen, userId, email, onComplete }: Com
           <div className="space-y-2">
             <Label>Gender *</Label>
             <RadioGroup
-              value={selectedGender}
+              value={selectedGender || ''}
               onValueChange={(value) => setValue('gender', value as Gender)}
               disabled={isLoading}
               aria-invalid={errors.gender ? 'true' : 'false'}
