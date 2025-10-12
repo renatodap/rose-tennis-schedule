@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { CreateFormDialog } from '@/components/forms/CreateFormDialog';
+import { EditFormDialog } from '@/components/forms/EditFormDialog';
 import { FormResponsesView } from '@/components/forms/FormResponsesView';
 import { useFormManagement } from '@/lib/hooks/useFormManagement';
 import { useUser } from '@/lib/hooks/useUser';
@@ -40,7 +41,9 @@ export default function AdminFormsPage() {
   } = useFormManagement();
 
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedForm, setSelectedForm] = useState<Form | null>(null);
+  const [editingForm, setEditingForm] = useState<Form | null>(null);
   const [viewResponsesDialogOpen, setViewResponsesDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [formToDelete, setFormToDelete] = useState<Form | null>(null);
@@ -85,6 +88,17 @@ export default function AdminFormsPage() {
   const handleDeleteClick = (form: Form) => {
     setFormToDelete(form);
     setDeleteDialogOpen(true);
+  };
+
+  const handleEditForm = (form: Form) => {
+    setEditingForm(form);
+    setEditDialogOpen(true);
+  };
+
+  const handleUpdateForm = async (formId: string, updates: Partial<Form>) => {
+    await updateForm(formId, updates);
+    setEditDialogOpen(false);
+    setEditingForm(null);
   };
 
   const handleDeleteConfirm = async () => {
@@ -175,6 +189,14 @@ export default function AdminFormsPage() {
                   <Button
                     variant="outline"
                     size="sm"
+                    onClick={() => handleEditForm(form)}
+                  >
+                    <Edit className="h-4 w-4 mr-1" />
+                    Edit
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() => handleToggleStatus(form)}
                   >
                     {form.is_active ? (
@@ -226,6 +248,13 @@ export default function AdminFormsPage() {
         open={createDialogOpen}
         onOpenChange={setCreateDialogOpen}
         onSubmit={handleCreateForm}
+      />
+
+      <EditFormDialog
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        form={editingForm}
+        onSubmit={handleUpdateForm}
       />
 
       <Dialog open={viewResponsesDialogOpen} onOpenChange={setViewResponsesDialogOpen}>
