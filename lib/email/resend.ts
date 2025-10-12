@@ -5,8 +5,15 @@
 
 import { Resend } from 'resend';
 
-// Initialize Resend client
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Lazy-initialize Resend client to avoid build-time errors
+let resend: Resend | null = null;
+
+function getResendClient() {
+  if (!resend) {
+    resend = new Resend(process.env.RESEND_API_KEY || '');
+  }
+  return resend;
+}
 
 // Email configuration
 const FROM_EMAIL = 'Rose-Hulman Tennis <noreply@yourdomain.com>'; // Update with your verified domain
@@ -30,7 +37,8 @@ export async function sendEmail(options: SendEmailOptions) {
       return { success: false, error: 'API key not configured' };
     }
 
-    const { data, error } = await resend.emails.send({
+    const client = getResendClient();
+    const { data, error } = await client.emails.send({
       from: FROM_EMAIL,
       to: options.to,
       subject: options.subject,
