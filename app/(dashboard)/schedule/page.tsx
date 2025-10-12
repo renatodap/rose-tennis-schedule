@@ -140,7 +140,7 @@ export default function UnifiedSchedulePage() {
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">My Schedule</h1>
           <p className="text-sm sm:text-base text-gray-600 mt-1">
-            Manage classes, availability, and blockers in one place
+            View classes, team events, availability, and blockers in one place
           </p>
         </div>
 
@@ -188,6 +188,17 @@ export default function UnifiedSchedulePage() {
           Classes
         </button>
         <button
+          onClick={() => setFilter('event')}
+          className={cn(
+            'px-4 py-2 rounded-md text-sm font-medium transition-colors',
+            filter === 'event'
+              ? 'bg-blue-600 text-white shadow-sm'
+              : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
+          )}
+        >
+          Team Events
+        </button>
+        <button
           onClick={() => setFilter('availability')}
           className={cn(
             'px-4 py-2 rounded-md text-sm font-medium transition-colors',
@@ -212,7 +223,7 @@ export default function UnifiedSchedulePage() {
         <div className="ml-auto text-sm text-gray-600 flex items-center gap-1.5">
           <Filter className="h-4 w-4" />
           <span className="hidden sm:inline">Filter:</span>
-          <span className="font-medium capitalize">{filter}</span>
+          <span className="font-medium capitalize">{filter === 'event' ? 'Team Events' : filter}</span>
         </div>
       </div>
 

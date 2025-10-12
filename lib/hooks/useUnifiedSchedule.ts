@@ -10,13 +10,14 @@ import { useState, useCallback, useEffect } from 'react';
 import { useClassSchedule } from './useClassSchedule';
 import { useAvailability } from './useAvailability';
 import { useBlockers } from './useBlockers';
+import { useEvents } from './useEvents';
 import { CalendarEvent } from '@/components/calendar/WeekView';
 import { format, addDays, parseISO } from 'date-fns';
 import { combineDateTimeForStorage } from '@/lib/utils/time';
 
 export interface UnifiedScheduleItem {
   id: string;
-  type: 'class' | 'availability' | 'blocker';
+  type: 'class' | 'availability' | 'blocker' | 'event';
   title: string;
   dayOfWeek?: number;
   date?: string;
@@ -36,7 +37,7 @@ interface UseUnifiedScheduleProps {
 }
 
 export function useUnifiedSchedule({ quarter, year }: UseUnifiedScheduleProps) {
-  const [filter, setFilter] = useState<'all' | 'class' | 'availability' | 'blocker'>('all');
+  const [filter, setFilter] = useState<'all' | 'class' | 'availability' | 'blocker' | 'event'>('all');
 
   // Fetch data from individual hooks
   const {
@@ -65,7 +66,12 @@ export function useUnifiedSchedule({ quarter, year }: UseUnifiedScheduleProps) {
     deleteOneTimeBlocker,
   } = useBlockers();
 
-  const loading = classesLoading || availabilityLoading || blockersLoading;
+  const {
+    events,
+    loading: eventsLoading,
+  } = useEvents();
+
+  const loading = classesLoading || availabilityLoading || blockersLoading || eventsLoading;
 
   /**
    * Add multi-day class
@@ -179,12 +185,12 @@ export function useUnifiedSchedule({ quarter, year }: UseUnifiedScheduleProps) {
    * Convert all items to unified calendar events
    */
   const getCalendarEvents = useCallback((): CalendarEvent[] => {
-    const events: CalendarEvent[] = [];
+    const calendarEvents: CalendarEvent[] = [];
 
     // Filter and add classes
     if (filter === 'all' || filter === 'class') {
       classes.forEach(cls => {
-        events.push({
+        calendarEvents.push({
           id: `class-${cls.id}`,
           title: cls.course_name || 'Class',
           dayOfWeek: cls.day_of_week,
@@ -199,7 +205,7 @@ export function useUnifiedSchedule({ quarter, year }: UseUnifiedScheduleProps) {
     // Filter and add recurring blockers
     if (filter === 'all' || filter === 'blocker') {
       recurringBlockers.forEach(blocker => {
-        events.push({
+        calendarEvents.push({
           id: `blocker-recurring-${blocker.id}`,
           title: blocker.title || 'Busy',
           dayOfWeek: blocker.day_of_week,
@@ -210,11 +216,33 @@ export function useUnifiedSchedule({ quarter, year }: UseUnifiedScheduleProps) {
       });
     }
 
+    // Filter and add team events
+    if (filter === 'all' || filter === 'event') {
+      events.forEach(event => {
+        // Extract day of week and time from ISO datetime strings
+        const startDate = parseISO(event.start_datetime);
+        const endDate = parseISO(event.end_datetime);
+        const dayOfWeek = startDate.getDay();
+        const startTime = format(startDate, 'HH:mm');
+        const endTime = format(endDate, 'HH:mm');
+
+        calendarEvents.push({
+          id: `event-${event.id}`,
+          title: event.title,
+          dayOfWeek: dayOfWeek,
+          startTime: startTime,
+          endTime: endTime,
+          type: 'event',
+          location: event.location || undefined,
+        });
+      });
+    }
+
     // Note: One-time items (availability, one-time blockers) are date-based
     // They'll be added in a different view or converted based on current week
 
-    return events;
-  }, [classes, recurringBlockers, filter]);
+    return calendarEvents;
+  }, [classes, recurringBlockers, events, filter]);
 
   /**
    * Delete any item by type and id
