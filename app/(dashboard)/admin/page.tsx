@@ -32,6 +32,24 @@ interface TeamStats {
   thisWeekAvailability: number;
 }
 
+interface EventInsight {
+  id: string;
+  title: string;
+  start_datetime: string;
+  response_rate: number;
+  going_count: number;
+  total_eligible: number;
+}
+
+interface FormInsight {
+  id: string;
+  title: string;
+  completion_rate: number;
+  responses_count: number;
+  total_eligible: number;
+  due_date?: string;
+}
+
 export default function AdminDashboardPage() {
   const { profile } = useUser();
   const [stats, setStats] = useState<TeamStats>({
@@ -42,6 +60,8 @@ export default function AdminDashboardPage() {
     activeFormsCount: 0,
     thisWeekAvailability: 0,
   });
+  const [eventInsights, setEventInsights] = useState<EventInsight[]>([]);
+  const [formInsights, setFormInsights] = useState<FormInsight[]>([]);
   const [loading, setLoading] = useState(true);
   const supabase = getClient();
 
@@ -114,6 +134,93 @@ export default function AdminDashboardPage() {
             ...prev,
             thisWeekAvailability: availabilityData.length,
           }));
+        }
+
+        // Fetch event insights - upcoming events with low response rates
+        const { data: upcomingEvents } = await supabase
+          .from('events')
+          .select('*')
+          .gte('start_datetime', now)
+          .order('start_datetime', { ascending: true })
+          .limit(5);
+
+        if (upcomingEvents && usersData) {
+          const insights: EventInsight[] = [];
+
+          for (const event of upcomingEvents) {
+            // Calculate eligible users for this event
+            const eligibleUsers = usersData.filter(user => {
+              const genderMatch = event.applies_to_men && user.gender === 'men' ||
+                                 event.applies_to_women && user.gender === 'women';
+              return genderMatch;
+            });
+
+            // Get response count
+            const { data: responses } = await supabase
+              .from('event_responses')
+              .select('response')
+              .eq('event_id', event.id);
+
+            const goingCount = responses?.filter(r => r.response === 'going').length || 0;
+            const responseRate = eligibleUsers.length > 0
+              ? (responses?.length || 0) / eligibleUsers.length
+              : 0;
+
+            insights.push({
+              id: event.id,
+              title: event.title,
+              start_datetime: event.start_datetime,
+              response_rate: responseRate * 100,
+              going_count: goingCount,
+              total_eligible: eligibleUsers.length,
+            });
+          }
+
+          // Sort by response rate (lowest first) to highlight events needing attention
+          setEventInsights(insights.sort((a, b) => a.response_rate - b.response_rate));
+        }
+
+        // Fetch form insights - active forms with completion rates
+        const { data: activeForms } = await supabase
+          .from('forms')
+          .select('*')
+          .eq('is_active', true)
+          .order('created_at', { ascending: false })
+          .limit(5);
+
+        if (activeForms && usersData) {
+          const formInsightData: FormInsight[] = [];
+
+          for (const form of activeForms) {
+            // Calculate eligible users for this form
+            const eligibleUsers = usersData.filter(user => {
+              if (form.gender && user.gender !== form.gender) return false;
+              if (form.team_level && user.team_level !== form.team_level) return false;
+              return true;
+            });
+
+            // Get response count
+            const { count: responseCount } = await supabase
+              .from('form_responses')
+              .select('*', { count: 'exact', head: true })
+              .eq('form_id', form.id);
+
+            const completionRate = eligibleUsers.length > 0
+              ? (responseCount || 0) / eligibleUsers.length
+              : 0;
+
+            formInsightData.push({
+              id: form.id,
+              title: form.title,
+              completion_rate: completionRate * 100,
+              responses_count: responseCount || 0,
+              total_eligible: eligibleUsers.length,
+              due_date: form.due_date || undefined,
+            });
+          }
+
+          // Sort by completion rate (lowest first) to highlight forms needing attention
+          setFormInsights(formInsightData.sort((a, b) => a.completion_rate - b.completion_rate));
         }
       } catch (error) {
         console.error('Error fetching admin stats:', error);
@@ -202,6 +309,121 @@ export default function AdminDashboardPage() {
         </Card>
       </div>
 
+      {/* Key Insights Section */}
+      {(eventInsights.length > 0 || formInsights.length > 0) && (
+        <div className="space-y-6">
+          <h2 className="text-2xl font-bold tracking-tight text-gray-900">Key Insights</h2>
+
+          <div className="grid gap-6 md:grid-cols-2">
+            {/* Event Response Insights */}
+            {eventInsights.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Event Response Rates</CardTitle>
+                  <CardDescription>
+                    Upcoming events ordered by response rate (lowest first)
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {eventInsights.map((event) => (
+                      <div key={event.id} className="border-l-4 pl-3" style={{
+                        borderColor: event.response_rate < 30 ? '#dc2626' : event.response_rate < 60 ? '#f59e0b' : '#16a34a'
+                      }}>
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1">
+                            <h4 className="font-semibold text-sm text-gray-900">{event.title}</h4>
+                            <p className="text-xs text-gray-600 mt-1">
+                              {new Date(event.start_datetime).toLocaleDateString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                hour: 'numeric',
+                                minute: '2-digit',
+                              })}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-lg font-bold" style={{
+                              color: event.response_rate < 30 ? '#dc2626' : event.response_rate < 60 ? '#f59e0b' : '#16a34a'
+                            }}>
+                              {event.response_rate.toFixed(0)}%
+                            </div>
+                            <p className="text-xs text-gray-600">
+                              {event.going_count}/{event.total_eligible} going
+                            </p>
+                          </div>
+                        </div>
+                        {event.response_rate < 50 && (
+                          <p className="text-xs text-yellow-700 mt-2 bg-yellow-50 px-2 py-1 rounded">
+                            ⚠️ Low response rate - consider sending a reminder
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                    <Button asChild variant="outline" className="w-full mt-2">
+                      <Link href="/admin/events">View All Events</Link>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Form Completion Insights */}
+            {formInsights.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Form Completion Rates</CardTitle>
+                  <CardDescription>
+                    Active forms ordered by completion rate (lowest first)
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {formInsights.map((form) => (
+                      <div key={form.id} className="border-l-4 pl-3" style={{
+                        borderColor: form.completion_rate < 30 ? '#dc2626' : form.completion_rate < 60 ? '#f59e0b' : '#16a34a'
+                      }}>
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1">
+                            <h4 className="font-semibold text-sm text-gray-900">{form.title}</h4>
+                            {form.due_date && (
+                              <p className="text-xs text-gray-600 mt-1">
+                                Due: {new Date(form.due_date).toLocaleDateString('en-US', {
+                                  month: 'short',
+                                  day: 'numeric',
+                                })}
+                              </p>
+                            )}
+                          </div>
+                          <div className="text-right">
+                            <div className="text-lg font-bold" style={{
+                              color: form.completion_rate < 30 ? '#dc2626' : form.completion_rate < 60 ? '#f59e0b' : '#16a34a'
+                            }}>
+                              {form.completion_rate.toFixed(0)}%
+                            </div>
+                            <p className="text-xs text-gray-600">
+                              {form.responses_count}/{form.total_eligible} responses
+                            </p>
+                          </div>
+                        </div>
+                        {form.completion_rate < 50 && (
+                          <p className="text-xs text-yellow-700 mt-2 bg-yellow-50 px-2 py-1 rounded">
+                            ⚠️ Low completion rate - consider sending a reminder
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                    <Button asChild variant="outline" className="w-full mt-2">
+                      <Link href="/admin/forms">View All Forms</Link>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Quick Actions */}
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
@@ -258,12 +480,11 @@ export default function AdminDashboardPage() {
               asChild
               variant="outline"
               className="w-full justify-start"
-              disabled
             >
-              <div>
+              <Link href="/admin/events">
                 <Calendar className="mr-2 h-4 w-4" aria-hidden="true" />
-                Create New Event (Coming Soon)
-              </div>
+                Create New Event
+              </Link>
             </Button>
           </CardContent>
         </Card>
@@ -290,12 +511,11 @@ export default function AdminDashboardPage() {
               asChild
               variant="outline"
               className="w-full justify-start"
-              disabled
             >
-              <div>
+              <Link href="/admin/forms">
                 <ClipboardList className="mr-2 h-4 w-4" aria-hidden="true" />
-                Create New Form (Coming Soon)
-              </div>
+                Create New Form
+              </Link>
             </Button>
           </CardContent>
         </Card>
@@ -344,21 +564,20 @@ export default function AdminDashboardPage() {
         <CardContent>
           <p className="text-sm text-gray-600 mb-4">
             As an administrator, you have access to enhanced features for managing the team.
-            Most admin features are currently in development and will be available soon.
           </p>
           <div className="text-sm text-gray-500">
             <p className="font-medium mb-2">Available features:</p>
             <ul className="space-y-1 ml-4">
               <li>• View team statistics and overview</li>
+              <li>• Create and manage team events with RSVP tracking</li>
+              <li>• Design custom forms and surveys</li>
+              <li>• View detailed availability reports</li>
               <li>• Navigate to user, event, form, and report management sections</li>
             </ul>
             <p className="font-medium mb-2 mt-4">Coming soon:</p>
             <ul className="space-y-1 ml-4">
-              <li>• Create and manage team events</li>
-              <li>• Design custom forms and surveys</li>
-              <li>• Generate detailed availability reports</li>
               <li>• Manage user roles and permissions</li>
-              <li>• Export data for analysis</li>
+              <li>• Export comprehensive data for analysis</li>
             </ul>
           </div>
         </CardContent>

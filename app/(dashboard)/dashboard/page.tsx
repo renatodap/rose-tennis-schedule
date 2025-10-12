@@ -13,20 +13,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { BRAND_COLORS, UserRole } from '@/lib/constants';
 import {
-  Calendar,
-  Clock,
   CalendarDays,
   FileText,
   ArrowRight,
   TrendingUp,
 } from 'lucide-react';
-import { Event, Form, PracticeAvailability } from '@/lib/types/database.types';
+import { Event } from '@/lib/types/database.types';
 
 export default function DashboardPage() {
   const { profile } = useUser();
   const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
   const [pendingFormsCount, setPendingFormsCount] = useState(0);
-  const [weekAvailabilityCount, setWeekAvailabilityCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const supabase = getClient();
 
@@ -39,12 +36,28 @@ export default function DashboardPage() {
 
         // Get upcoming events (next 3)
         const now = new Date().toISOString();
-        const { data: eventsData } = await supabase
+
+        // Build query with gender filter
+        let eventsQuery = supabase
           .from('events')
           .select('*')
-          .gte('start_datetime', now)
-          .or(`gender.is.null,gender.eq.${profile.gender}`)
-          .or(`team_level.is.null,team_level.eq.${profile.team_level}`)
+          .gte('start_datetime', now);
+
+        // Apply gender filter
+        if (profile.gender === 'men') {
+          eventsQuery = eventsQuery.eq('applies_to_men', true);
+        } else if (profile.gender === 'women') {
+          eventsQuery = eventsQuery.eq('applies_to_women', true);
+        }
+
+        // Apply team level filter
+        if (profile.team_level === 'jv') {
+          eventsQuery = eventsQuery.eq('applies_to_jv', true);
+        } else if (profile.team_level === 'varsity') {
+          eventsQuery = eventsQuery.eq('applies_to_varsity', true);
+        }
+
+        const { data: eventsData } = await eventsQuery
           .order('start_datetime', { ascending: true })
           .limit(3);
 
@@ -53,14 +66,19 @@ export default function DashboardPage() {
         }
 
         // Get pending forms count
-        const { data: formsData } = await supabase
+        const { data: allFormsData } = await supabase
           .from('forms')
-          .select('id')
-          .eq('is_active', true)
-          .or(`gender.is.null,gender.eq.${profile.gender}`)
-          .or(`team_level.is.null,team_level.eq.${profile.team_level}`);
+          .select('id, gender, team_level')
+          .eq('is_active', true);
 
-        if (formsData) {
+        if (allFormsData) {
+          // Filter forms that match user's gender and team level
+          const formsData = allFormsData.filter(form => {
+            const genderMatch = !form.gender || form.gender === profile.gender;
+            const teamLevelMatch = !form.team_level || form.team_level === profile.team_level;
+            return genderMatch && teamLevelMatch;
+          });
+
           // Check which forms user hasn't responded to
           const { data: responsesData } = await supabase
             .from('form_responses')
@@ -76,24 +94,6 @@ export default function DashboardPage() {
           ).length;
 
           setPendingFormsCount(pendingCount);
-        }
-
-        // Get this week's availability count
-        const today = new Date();
-        const startOfWeek = new Date(today);
-        startOfWeek.setDate(today.getDate() - today.getDay()); // Sunday
-        const endOfWeek = new Date(startOfWeek);
-        endOfWeek.setDate(startOfWeek.getDate() + 6); // Saturday
-
-        const { data: availabilityData } = await supabase
-          .from('practice_availability')
-          .select('*')
-          .eq('user_id', profile.id)
-          .gte('date', startOfWeek.toISOString().split('T')[0])
-          .lte('date', endOfWeek.toISOString().split('T')[0]);
-
-        if (availabilityData) {
-          setWeekAvailabilityCount(availabilityData.length);
         }
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
@@ -134,7 +134,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Quick stats cards */}
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
@@ -164,83 +164,7 @@ export default function DashboardPage() {
             </p>
           </CardContent>
         </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              This Week&apos;s Availability
-            </CardTitle>
-            <Clock className="h-4 w-4 text-gray-500" aria-hidden="true" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{weekAvailabilityCount}/7</div>
-            <p className="text-xs text-gray-500 mt-1">
-              Days marked
-            </p>
-          </CardContent>
-        </Card>
       </div>
-
-      {/* Quick actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
-          <CardDescription>
-            Common tasks to help you get started
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <Button
-              asChild
-              variant="outline"
-              className="h-auto flex-col items-start p-4 hover:shadow-md transition-shadow"
-            >
-              <Link href="/availability">
-                <div className="flex items-center gap-2 mb-2">
-                  <Clock className="h-5 w-5" style={{ color: BRAND_COLORS.PRIMARY }} aria-hidden="true" />
-                  <span className="font-semibold">Add Availability</span>
-                </div>
-                <span className="text-xs text-gray-600 text-left">
-                  Update your practice availability
-                </span>
-              </Link>
-            </Button>
-
-            <Button
-              asChild
-              variant="outline"
-              className="h-auto flex-col items-start p-4 hover:shadow-md transition-shadow"
-            >
-              <Link href="/schedule">
-                <div className="flex items-center gap-2 mb-2">
-                  <Calendar className="h-5 w-5" style={{ color: BRAND_COLORS.PRIMARY }} aria-hidden="true" />
-                  <span className="font-semibold">View Schedule</span>
-                </div>
-                <span className="text-xs text-gray-600 text-left">
-                  Check your class schedule
-                </span>
-              </Link>
-            </Button>
-
-            <Button
-              asChild
-              variant="outline"
-              className="h-auto flex-col items-start p-4 hover:shadow-md transition-shadow"
-            >
-              <Link href="/events">
-                <div className="flex items-center gap-2 mb-2">
-                  <CalendarDays className="h-5 w-5" style={{ color: BRAND_COLORS.PRIMARY }} aria-hidden="true" />
-                  <span className="font-semibold">View Events</span>
-                </div>
-                <span className="text-xs text-gray-600 text-left">
-                  See upcoming team events
-                </span>
-              </Link>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Upcoming events section */}
       {upcomingEvents.length > 0 && (

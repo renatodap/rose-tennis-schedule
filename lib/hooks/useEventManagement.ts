@@ -87,10 +87,35 @@ export function useEventManagement() {
         throw error;
       }
 
-      toast({
-        title: 'Event Created',
-        description: `"${eventData.title}" has been created successfully`,
-      });
+      // Send email notifications to eligible users
+      try {
+        const response = await fetch('/api/email/send-event-notification', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ eventId: data.id }),
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          toast({
+            title: 'Event Created',
+            description: `"${eventData.title}" has been created and ${result.emailsSent || 0} notification(s) sent`,
+          });
+        } else {
+          toast({
+            title: 'Event Created',
+            description: `"${eventData.title}" has been created (email notifications may have failed)`,
+          });
+        }
+      } catch (emailError) {
+        console.error('Error sending email notifications:', emailError);
+        toast({
+          title: 'Event Created',
+          description: `"${eventData.title}" has been created (email notifications failed)`,
+        });
+      }
 
       return data as Event;
     } catch (err) {

@@ -131,8 +131,8 @@ export function useAvailabilityDashboard(
         .from('practice_availability')
         .select('*')
         .in('user_id', userIds)
-        .gte('date', startDate)
-        .lte('date', endDate);
+        .gte('start_datetime', `${startDate}T00:00:00`)
+        .lte('start_datetime', `${endDate}T23:59:59`);
 
       if (paError) throw paError;
 
@@ -157,7 +157,7 @@ export function useAvailabilityDashboard(
             const userRecurringBlockers = recurringBlockers?.filter(rb => rb.user_id === user.id) || [];
             const userOneTimeBlockers = oneTimeBlockers?.filter(otb => otb.user_id === user.id) || [];
             const userAvailability = practiceAvailability?.find(
-              pa => pa.user_id === user.id && pa.date === date
+              pa => pa.user_id === user.id && pa.start_datetime.split('T')[0] === date
             );
 
             return isUserAvailable(

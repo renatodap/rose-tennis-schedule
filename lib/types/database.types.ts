@@ -68,6 +68,19 @@ export interface OneTimeBlocker {
 }
 
 /**
+ * Exception for a recurring class schedule
+ * Marks specific dates when a recurring class doesn't apply
+ */
+export interface ClassScheduleException {
+  id: string; // UUID
+  user_id: string; // References User.id
+  class_schedule_id: string; // References ClassSchedule.id
+  exception_date: string; // ISO date (YYYY-MM-DD)
+  reason?: string;
+  created_at: string; // ISO timestamp
+}
+
+/**
  * Daily practice availability for a user
  */
 export interface PracticeAvailability {
@@ -187,6 +200,11 @@ export interface Database {
         Row: OneTimeBlocker;
         Insert: Omit<OneTimeBlocker, 'id' | 'created_at' | 'updated_at'>;
         Update: Partial<Omit<OneTimeBlocker, 'id' | 'created_at' | 'updated_at'>>;
+      };
+      class_schedule_exceptions: {
+        Row: ClassScheduleException;
+        Insert: Omit<ClassScheduleException, 'id' | 'created_at'>;
+        Update: Partial<Omit<ClassScheduleException, 'id' | 'created_at'>>;
       };
       practice_availability: {
         Row: PracticeAvailability;

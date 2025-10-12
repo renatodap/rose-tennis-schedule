@@ -60,10 +60,35 @@ export function useFormManagement() {
 
       if (error) throw error;
 
-      toast({
-        title: 'Success',
-        description: 'Form created successfully.',
-      });
+      // Send email notifications to eligible users
+      try {
+        const response = await fetch('/api/email/send-form-notification', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ formId: data.id }),
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          toast({
+            title: 'Success',
+            description: `Form created successfully. ${result.emailsSent || 0} notification(s) sent.`,
+          });
+        } else {
+          toast({
+            title: 'Success',
+            description: 'Form created successfully (email notifications may have failed).',
+          });
+        }
+      } catch (emailError) {
+        console.error('Error sending email notifications:', emailError);
+        toast({
+          title: 'Success',
+          description: 'Form created successfully (email notifications failed).',
+        });
+      }
 
       await fetchForms();
       return data;

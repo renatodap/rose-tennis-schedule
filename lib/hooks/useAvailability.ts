@@ -11,7 +11,7 @@ import { PracticeAvailability } from '@/lib/types/database.types';
 import { AvailabilityStatus } from '@/lib/constants';
 import { useAuth } from './useAuth';
 import { toast } from './use-toast';
-import { getTodayDateISO } from '@/lib/utils/time';
+import { getTodayDateISO, combineDateTimeForStorage } from '@/lib/utils/time';
 import { addDays, parseISO, format } from 'date-fns';
 
 export interface AvailabilityInput {
@@ -48,8 +48,8 @@ export function useAvailability() {
         .from('practice_availability')
         .select('*')
         .eq('user_id', user.id)
-        .gte('date', getTodayDateISO()) // Only future/today in app timezone
-        .order('date', { ascending: true });
+        .gte('start_datetime', getTodayDateISO() + 'T00:00:00') // Only future/today in app timezone
+        .order('start_datetime', { ascending: true });
 
       if (error) throw error;
 
@@ -85,8 +85,8 @@ export function useAvailability() {
         .from('practice_availability')
         .insert({
           user_id: user.id,
-          date: input.date,
-          status: AvailabilityStatus.AVAILABLE,
+          start_datetime: combineDateTimeForStorage(input.date, input.start_time),
+          end_datetime: combineDateTimeForStorage(input.date, input.end_time),
           notes: input.notes || null,
         })
         .select()
@@ -95,7 +95,7 @@ export function useAvailability() {
       if (error) throw error;
 
       // Optimistic update
-      setAvailability((prev) => [...prev, data].sort((a, b) => a.date.localeCompare(b.date)));
+      setAvailability((prev) => [...prev, data].sort((a, b) => a.start_datetime.localeCompare(b.start_datetime)));
 
       toast({
         title: 'Success',
@@ -142,8 +142,8 @@ export function useAvailability() {
       // Create availability entries for all dates
       const entries = dates.map(date => ({
         user_id: user.id!,
-        date,
-        status: AvailabilityStatus.AVAILABLE,
+        start_datetime: combineDateTimeForStorage(date, range.start_time),
+        end_datetime: combineDateTimeForStorage(date, range.end_time),
         notes: range.notes || null,
       }));
 
@@ -155,7 +155,7 @@ export function useAvailability() {
       if (error) throw error;
 
       // Optimistic update
-      setAvailability((prev) => [...prev, ...data].sort((a, b) => a.date.localeCompare(b.date)));
+      setAvailability((prev) => [...prev, ...data].sort((a, b) => a.start_datetime.localeCompare(b.start_datetime)));
 
       toast({
         title: 'Success',
