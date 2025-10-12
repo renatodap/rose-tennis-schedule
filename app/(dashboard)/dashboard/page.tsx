@@ -6,16 +6,10 @@
  */
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
 import { useUser } from '@/lib/hooks/useUser';
 import { getClient } from '@/lib/supabase/client';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { BRAND_COLORS, UserRole } from '@/lib/constants';
-import {
-  FileText,
-  TrendingUp,
-} from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { FileText } from 'lucide-react';
 
 export default function DashboardPage() {
   const { profile } = useUser();
@@ -74,8 +68,6 @@ export default function DashboardPage() {
     return null;
   }
 
-  const isAdmin = profile.role === UserRole.COACH || profile.role === UserRole.CAPTAIN;
-
   return (
     <div className="space-y-8 max-w-7xl">
       {/* Welcome section */}
@@ -106,59 +98,6 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* Admin quick actions */}
-      {isAdmin && (
-        <Card style={{ borderColor: BRAND_COLORS.PRIMARY }}>
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5" style={{ color: BRAND_COLORS.PRIMARY }} aria-hidden="true" />
-              <CardTitle>Admin Actions</CardTitle>
-            </div>
-            <CardDescription>
-              Team management and administrative tasks
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Button
-                asChild
-                variant="outline"
-                className="h-auto flex-col items-start p-4 hover:shadow-md transition-shadow"
-                style={{ borderColor: BRAND_COLORS.PRIMARY }}
-              >
-                <Link href="/admin">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="font-semibold" style={{ color: BRAND_COLORS.PRIMARY }}>
-                      Admin Dashboard
-                    </span>
-                  </div>
-                  <span className="text-xs text-gray-600 text-left">
-                    View team overview and manage settings
-                  </span>
-                </Link>
-              </Button>
-
-              <Button
-                asChild
-                variant="outline"
-                className="h-auto flex-col items-start p-4 hover:shadow-md transition-shadow"
-                style={{ borderColor: BRAND_COLORS.PRIMARY }}
-              >
-                <Link href="/admin/events">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="font-semibold" style={{ color: BRAND_COLORS.PRIMARY }}>
-                      Create Event
-                    </span>
-                  </div>
-                  <span className="text-xs text-gray-600 text-left">
-                    Schedule a new team event
-                  </span>
-                </Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 }
