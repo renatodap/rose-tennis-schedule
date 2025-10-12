@@ -59,8 +59,7 @@ export function MicrosoftSignInButton({ mode = 'signin' }: MicrosoftSignInButton
       variant="outline"
       className="w-full"
       onClick={handleMicrosoftSignIn}
-      disabled={true}
-      title="Microsoft OAuth is not yet configured"
+      disabled={isLoading}
     >
       <svg
         className="w-5 h-5 mr-2"
@@ -74,7 +73,7 @@ export function MicrosoftSignInButton({ mode = 'signin' }: MicrosoftSignInButton
         <rect x="11" y="1" width="9" height="9" fill="#7FBA00" />
         <rect x="11" y="11" width="9" height="9" fill="#FFB900" />
       </svg>
-      {mode === 'signin' ? 'Sign in with Microsoft (Coming Soon)' : 'Sign up with Microsoft (Coming Soon)'}
+      {isLoading ? 'Connecting...' : mode === 'signin' ? 'Sign in with Microsoft' : 'Sign up with Microsoft'}
     </Button>
   );
 }
