@@ -72,11 +72,11 @@ export default function AdminDashboardPage() {
       try {
         setLoading(true);
 
-        // Get total players by gender
+        // Get total players and captains by gender (using team memberships for accurate count)
         const { data: usersData } = await supabase
           .from('users')
-          .select('gender')
-          .eq('role', 'player');
+          .select('id, gender, role')
+          .in('role', ['player', 'captain']);
 
         if (usersData) {
           const menCount = usersData.filter(u => u.gender === Gender.MEN).length;
