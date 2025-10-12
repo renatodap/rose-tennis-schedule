@@ -86,11 +86,10 @@ export default function SignInPage() {
         </p>
       </div>
 
-      {/* Microsoft OAuth button */}
+      {/* Microsoft OAuth button - Hidden until IT approval
       <div className="space-y-3">
         <MicrosoftSignInButton mode="signin" />
 
-        {/* Divider */}
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
             <span className="w-full border-t" />
@@ -100,6 +99,7 @@ export default function SignInPage() {
           </div>
         </div>
       </div>
+      */}
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {/* Email field */}
