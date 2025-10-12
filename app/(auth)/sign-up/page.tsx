@@ -73,12 +73,19 @@ export default function SignUpPage() {
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: data.email,
         password: data.password,
+        options: {
+          data: {
+            first_name: data.firstName,
+            last_name: data.lastName,
+          },
+        },
       });
 
       if (authError) {
+        console.error('Auth error:', authError);
         toast({
           title: 'Sign up failed',
-          description: authError.message,
+          description: authError.message || 'Unable to create account. Please try again.',
           variant: 'destructive',
         });
         return;
@@ -90,6 +97,16 @@ export default function SignUpPage() {
           description: 'Unable to create user account.',
           variant: 'destructive',
         });
+        return;
+      }
+
+      // Check if email confirmation is required
+      if (authData.user && !authData.session) {
+        toast({
+          title: 'Check your email',
+          description: 'Please check your email to confirm your account before signing in.',
+        });
+        router.push('/sign-in');
         return;
       }
 
@@ -224,7 +241,7 @@ export default function SignUpPage() {
         <div className="space-y-2">
           <Label>Gender *</Label>
           <RadioGroup
-            value={selectedGender}
+            value={selectedGender || ''}
             onValueChange={(value) => setValue('gender', value as Gender)}
             disabled={isLoading}
             aria-invalid={errors.gender ? 'true' : 'false'}
