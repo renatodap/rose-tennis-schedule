@@ -86,14 +86,30 @@ export function CompleteProfileDialog({ isOpen, userId, email, onComplete }: Com
     setIsLoading(true);
 
     try {
-      // Try to upsert (insert or update) the user profile
+      // Validate team selection for players and captains
+      if ((data.role === UserRole.PLAYER || data.role === UserRole.CAPTAIN) && selectedTeamIds.length === 0) {
+        toast({
+          title: 'Team selection required',
+          description: 'Please select at least one team.',
+          variant: 'destructive',
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      // Get the first selected team to populate legacy gender/team_level fields
+      const firstTeam = teams.find(t => t.id === selectedTeamIds[0]);
+
+      // Create user profile
       const { error: profileError } = await supabase.from('users').upsert({
         id: userId,
         email,
         first_name: data.firstName,
         last_name: data.lastName,
-        gender: data.gender,
-        role: UserRole.PLAYER,
+        role: data.role,
+        // Set gender/team_level for backward compatibility (nullable for coaches)
+        gender: firstTeam?.gender || null,
+        team_level: firstTeam?.team_level || null,
         phone_number: data.phone || null,
       }, {
         onConflict: 'id'
@@ -107,6 +123,23 @@ export function CompleteProfileDialog({ isOpen, userId, email, onComplete }: Com
           variant: 'destructive',
         });
         return;
+      }
+
+      // Create team memberships for players and captains
+      if (data.role !== UserRole.COACH && selectedTeamIds.length > 0) {
+        const userTeams = selectedTeamIds.map(teamId => ({
+          user_id: userId,
+          team_id: teamId,
+        }));
+
+        const { error: teamsError } = await supabase
+          .from('user_teams')
+          .insert(userTeams);
+
+        if (teamsError) {
+          console.error('Team assignment error:', teamsError);
+          // Don't fail the whole process, just warn
+        }
       }
 
       toast({
@@ -127,6 +160,14 @@ export function CompleteProfileDialog({ isOpen, userId, email, onComplete }: Com
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const toggleTeam = (teamId: string) => {
+    setSelectedTeamIds(prev =>
+      prev.includes(teamId)
+        ? prev.filter(id => id !== teamId)
+        : [...prev, teamId]
+    );
   };
 
   return (
@@ -189,34 +230,79 @@ export function CompleteProfileDialog({ isOpen, userId, email, onComplete }: Com
             </div>
           </div>
 
-          {/* Gender selection */}
+          {/* Role selection */}
           <div className="space-y-2">
-            <Label>Gender *</Label>
+            <Label>Role *</Label>
             <RadioGroup
-              value={selectedGender || ''}
-              onValueChange={(value) => setValue('gender', value as Gender)}
+              value={selectedRole || ''}
+              onValueChange={(value) => setValue('role', value as UserRole)}
               disabled={isLoading}
-              aria-invalid={errors.gender ? 'true' : 'false'}
+              aria-invalid={errors.role ? 'true' : 'false'}
             >
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value={Gender.MEN} id="men" />
-                <Label htmlFor="men" className="font-normal cursor-pointer">
-                  Men's Team
+                <RadioGroupItem value={UserRole.PLAYER} id="player" />
+                <Label htmlFor="player" className="font-normal cursor-pointer">
+                  Player
                 </Label>
               </div>
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value={Gender.WOMEN} id="women" />
-                <Label htmlFor="women" className="font-normal cursor-pointer">
-                  Women's Team
+                <RadioGroupItem value={UserRole.CAPTAIN} id="captain" />
+                <Label htmlFor="captain" className="font-normal cursor-pointer">
+                  Captain
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value={UserRole.COACH} id="coach" />
+                <Label htmlFor="coach" className="font-normal cursor-pointer">
+                  Coach
                 </Label>
               </div>
             </RadioGroup>
-            {errors.gender && (
+            {errors.role && (
               <p className="text-sm text-red-600" role="alert">
-                {errors.gender.message}
+                {errors.role.message}
               </p>
             )}
           </div>
+
+          {/* Team selection (for players and captains only) */}
+          {selectedRole && selectedRole !== UserRole.COACH && (
+            <div className="space-y-2">
+              <Label>Team(s) *</Label>
+              <p className="text-xs text-gray-500 mb-2">
+                Select the team(s) you belong to
+              </p>
+              <div className="space-y-2">
+                {teams.map((team) => (
+                  <div key={team.id} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={team.id}
+                      checked={selectedTeamIds.includes(team.id)}
+                      onCheckedChange={() => toggleTeam(team.id)}
+                      disabled={isLoading}
+                    />
+                    <Label htmlFor={team.id} className="font-normal cursor-pointer">
+                      {team.name}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+              {selectedTeamIds.length === 0 && selectedRole && (
+                <p className="text-sm text-red-600">
+                  Please select at least one team
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Note for coaches */}
+          {selectedRole === UserRole.COACH && (
+            <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
+              <p className="text-sm text-blue-800">
+                As a coach, your team assignments will be managed by the head coach after your profile is created.
+              </p>
+            </div>
+          )}
 
           {/* Phone number */}
           <div className="space-y-2">
