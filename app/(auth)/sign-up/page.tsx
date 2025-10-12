@@ -51,6 +51,15 @@ export default function SignUpPage() {
     formState: { errors },
   } = useForm<SignUpFormData>({
     resolver: zodResolver(signUpSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+      confirmPassword: '',
+      firstName: '',
+      lastName: '',
+      gender: undefined,
+      phone: '',
+    },
   });
 
   const selectedGender = watch('gender');
@@ -92,7 +101,7 @@ export default function SignUpPage() {
         gender: data.gender,
         role: UserRole.PLAYER, // Default role
         team_level: TeamLevel.JV, // Default team level
-        phone: data.phone || null,
+        phone_number: data.phone || null,
       });
 
       if (profileError) {

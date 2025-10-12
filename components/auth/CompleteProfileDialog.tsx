@@ -51,6 +51,12 @@ export function CompleteProfileDialog({ isOpen, userId, email, onComplete }: Com
     formState: { errors },
   } = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
+    defaultValues: {
+      firstName: '',
+      lastName: '',
+      gender: undefined,
+      phone: '',
+    },
   });
 
   const selectedGender = watch('gender');
