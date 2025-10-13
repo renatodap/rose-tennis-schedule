@@ -29,7 +29,7 @@ interface WeekViewProps {
   showLegend?: boolean;
 }
 
-const HOURS = Array.from({ length: 17 }, (_, i) => i + 6); // 6 AM to 11 PM
+const HOURS = Array.from({ length: 13 }, (_, i) => i + 8); // 8 AM to 8 PM
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const DAYS_FULL = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
