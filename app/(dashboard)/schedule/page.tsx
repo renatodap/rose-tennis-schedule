@@ -228,7 +228,7 @@ export default function UnifiedSchedulePage() {
       </div>
 
       {/* Calendar */}
-      <div className="h-[600px] sm:h-[700px]">
+      <div className="h-[calc(100vh-320px)] min-h-[600px]">
         <WeekView
           events={calendarEvents}
           selectedDate={new Date()}

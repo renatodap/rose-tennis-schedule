@@ -150,6 +150,14 @@ function hasConflict(event: CalendarEvent, allEvents: CalendarEvent[]): boolean 
 }
 
 export function WeekView({ events, selectedDate, onSlotClick, onEventClick, showLegend = true }: WeekViewProps) {
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    // Sync header scroll with content scroll
+    const headerScroll = e.currentTarget.previousElementSibling?.querySelector('.flex-1') as HTMLDivElement;
+    if (headerScroll) {
+      headerScroll.scrollLeft = e.currentTarget.scrollLeft;
+    }
+  };
+
   return (
     <div className="flex flex-col h-full">
       {/* Legend - Compact */}
@@ -198,28 +206,30 @@ export function WeekView({ events, selectedDate, onSlotClick, onEventClick, show
         </div>
       )}
 
-      <div className="flex-1 border border-gray-200 rounded-lg overflow-hidden bg-white">
+      <div className="flex-1 border border-gray-200 rounded-lg overflow-hidden bg-white flex flex-col">
         {/* Days header - sticky */}
-        <div className="flex border-b border-gray-200 bg-gray-50 sticky top-0 z-20">
+        <div className="flex border-b border-gray-200 bg-gray-50 sticky top-0 z-20 flex-shrink-0">
         {/* Time column header */}
         <div className="w-14 sm:w-16 flex-shrink-0 border-r border-gray-200" />
 
-        {/* Day headers */}
-        <div className="flex-1 flex min-w-0">
-          {DAYS.map((day, index) => (
-            <div
-              key={day}
-              className="flex-1 min-w-[60px] sm:min-w-[80px] p-2 text-center border-r border-gray-200 last:border-r-0"
-            >
-              <div className="text-xs font-semibold text-gray-600 hidden sm:block">{DAYS_FULL[index]}</div>
-              <div className="text-xs font-semibold text-gray-600 sm:hidden">{day}</div>
-            </div>
-          ))}
+        {/* Day headers - scrollable to match columns below */}
+        <div className="flex-1 overflow-x-auto overflow-y-hidden scrollbar-hide">
+          <div className="flex min-w-max">
+            {DAYS.map((day, index) => (
+              <div
+                key={day}
+                className="w-[120px] sm:w-[140px] flex-shrink-0 p-2 text-center border-r border-gray-200 last:border-r-0"
+              >
+                <div className="text-xs font-semibold text-gray-600 hidden sm:block">{DAYS_FULL[index]}</div>
+                <div className="text-xs font-semibold text-gray-600 sm:hidden">{day}</div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
       {/* Time slots with horizontal scroll */}
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 overflow-auto" onScroll={handleScroll}>
         <div className="flex min-w-max">
           {/* Time labels column */}
           <div className="w-14 sm:w-16 flex-shrink-0 border-r border-gray-200 bg-gray-50">
@@ -234,9 +244,9 @@ export function WeekView({ events, selectedDate, onSlotClick, onEventClick, show
           </div>
 
           {/* Days columns */}
-          <div className="flex-1 flex">
+          <div className="flex">
             {DAYS.map((_, dayIndex) => (
-              <div key={dayIndex} className="flex-1 min-w-[60px] sm:min-w-[80px] border-r border-gray-200 last:border-r-0">
+              <div key={dayIndex} className="w-[120px] sm:w-[140px] flex-shrink-0 border-r border-gray-200 last:border-r-0">
                 {HOURS.map((hour) => {
                   const dayEvents = events.filter(
                     (event) => event.dayOfWeek === dayIndex
