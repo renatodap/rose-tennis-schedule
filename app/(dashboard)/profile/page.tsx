@@ -6,15 +6,19 @@
  */
 
 import { useUser } from '@/lib/hooks/useUser';
+import { useBadges } from '@/lib/hooks/useBadges';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
+import { BadgeGrid } from '@/components/badges/BadgeGrid';
 import { BRAND_COLORS, UserRole, Gender } from '@/lib/constants';
-import { User, Mail, Smartphone, Shield, Users } from 'lucide-react';
+import { User, Mail, Smartphone, Shield, Users, Trophy } from 'lucide-react';
 
 export default function ProfilePage() {
   const { profile } = useUser();
+  const { userBadges, badgesByCategory, rarestBadge, loading: badgesLoading } = useBadges();
 
   if (!profile) {
     return (
@@ -94,6 +98,83 @@ export default function ProfilePage() {
               </div>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Achievement Badges */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Trophy className="w-5 h-5" />
+            Achievement Badges ({userBadges.length})
+          </CardTitle>
+          <CardDescription>
+            Badges you've earned for your participation and achievements
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {!badgesLoading ? (
+            <>
+              {/* Rarest Badge Showcase */}
+              {rarestBadge && (
+                <div className="p-4 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-lg border-2 border-amber-300">
+                  <div className="text-center">
+                    <div className="text-6xl mb-2">{rarestBadge.badge.icon}</div>
+                    <h4 className="font-bold text-lg text-amber-900">
+                      {rarestBadge.badge.name}
+                    </h4>
+                    <p className="text-sm text-amber-700 mt-1">
+                      {rarestBadge.badge.description}
+                    </p>
+                    <span className="inline-block mt-2 px-3 py-1 rounded-full text-xs font-medium bg-amber-200 text-amber-900">
+                      {rarestBadge.badge.rarity.toUpperCase()} - Your Rarest Badge
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Badges by category */}
+              {badgesByCategory.serious.length > 0 && (
+                <BadgeGrid
+                  badges={badgesByCategory.serious}
+                  title="Serious Achievements"
+                />
+              )}
+
+              {badgesByCategory.milestone.length > 0 && (
+                <BadgeGrid
+                  badges={badgesByCategory.milestone}
+                  title="Milestones"
+                />
+              )}
+
+              {badgesByCategory.funny.length > 0 && (
+                <BadgeGrid
+                  badges={badgesByCategory.funny}
+                  title="Fun Badges"
+                />
+              )}
+
+              {userBadges.length === 0 && (
+                <div className="text-center py-12 bg-gray-50 rounded-lg">
+                  <Trophy className="w-16 h-16 mx-auto text-gray-400 mb-3" />
+                  <h3 className="text-lg font-semibold text-gray-700 mb-1">
+                    No Badges Yet
+                  </h3>
+                  <p className="text-gray-500">
+                    Participate in events and challenges to earn badges!
+                  </p>
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="flex items-center justify-center py-8">
+              <div
+                className="w-6 h-6 border-4 border-t-transparent rounded-full animate-spin"
+                style={{ borderColor: `${BRAND_COLORS.PRIMARY} transparent ${BRAND_COLORS.PRIMARY} ${BRAND_COLORS.PRIMARY}` }}
+              />
+            </div>
+          )}
         </CardContent>
       </Card>
 

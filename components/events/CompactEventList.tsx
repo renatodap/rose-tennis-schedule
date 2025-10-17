@@ -10,12 +10,14 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, MapPin, Clock, ChevronDown, ChevronUp } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Calendar, MapPin, Clock, ChevronDown, ChevronUp, Car } from 'lucide-react';
 import { format, isToday, isTomorrow, isThisWeek } from 'date-fns';
 import { EventWithRsvp } from '@/lib/hooks/useEvents';
 import { AttendeeAvatars } from './AttendeeAvatars';
 import { MobileRsvpZones } from './MobileRsvpZones';
 import { RsvpButtons } from './RsvpButtons';
+import { EventRideShares } from './EventRideShares';
 import { cn } from '@/lib/utils/cn';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -171,8 +173,13 @@ export function CompactEventList({ events, onRsvpChange }: CompactEventListProps
                       <AttendeeAvatars attendees={event.attendees} maxVisible={6} />
                     )}
 
+                    {/* Ride Shares */}
+                    <div className="pt-3 border-t">
+                      <EventRideShares event={event} />
+                    </div>
+
                     {/* RSVP Buttons */}
-                    <div className="pt-2">
+                    <div className="pt-2 border-t">
                       {isMobile ? (
                         <MobileRsvpZones
                           eventId={event.id}

@@ -3,6 +3,9 @@
  * Handles push notifications and notification clicks
  */
 
+// Workbox manifest injection point
+self.__WB_MANIFEST;
+
 // Handle push notification events
 self.addEventListener('push', (event) => {
   console.log('Push event received:', event);

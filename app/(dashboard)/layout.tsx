@@ -31,6 +31,7 @@ import {
   LogOut,
   Menu,
   X,
+  Swords,
 } from 'lucide-react';
 
 export default function DashboardLayout({
@@ -101,6 +102,7 @@ export default function DashboardLayout({
     { name: 'Home', href: '/dashboard', icon: Home },
     { name: 'Schedule', href: '/schedule', icon: Calendar },
     { name: 'Events', href: '/events', icon: CalendarDays },
+    { name: 'Challenges', href: '/challenges', icon: Swords },
     { name: 'Profile', href: '/profile', icon: User },
   ];
 
@@ -300,14 +302,14 @@ export default function DashboardLayout({
       {/* Mobile bottom navigation */}
       <nav className="fixed bottom-0 left-0 right-0 z-40 lg:hidden border-t bg-white">
         <ul className="flex justify-around">
-          {navigation.slice(0, 5).map((item) => {
+          {navigation.filter(item => !isAdmin || item.name !== 'Admin').slice(0, 5).map((item) => {
             const Icon = item.icon;
             const isActive = isCurrentPath(item.href);
             return (
               <li key={item.name} className="flex-1">
                 <Link
                   href={item.href}
-                  className={`flex flex-col items-center justify-center py-2 px-3 text-xs ${
+                  className={`flex flex-col items-center justify-center py-2 px-1 text-xs ${
                     isActive
                       ? 'font-semibold'
                       : 'text-gray-600'
@@ -315,8 +317,8 @@ export default function DashboardLayout({
                   style={isActive ? { color: BRAND_COLORS.PRIMARY } : {}}
                   aria-current={isActive ? 'page' : undefined}
                 >
-                  <Icon className="h-6 w-6 mb-1" aria-hidden="true" />
-                  {item.name}
+                  <Icon className="h-5 w-5 mb-1" aria-hidden="true" />
+                  <span className="text-[10px]">{item.name}</span>
                 </Link>
               </li>
             );
