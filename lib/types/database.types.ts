@@ -219,6 +219,20 @@ export interface FormTeam {
 }
 
 /**
+ * Scheduled notification for an event
+ */
+export interface NotificationSchedule {
+  id: string; // UUID
+  event_id: string; // References Event.id
+  user_id: string; // References User.id
+  notification_type: '24hr' | '7hr' | '2hr' | '1hr';
+  scheduled_for: string; // ISO timestamp
+  sent_at?: string; // ISO timestamp (null if not sent yet)
+  created_at: string; // ISO timestamp
+  updated_at: string; // ISO timestamp
+}
+
+/**
  * Database tables type map
  */
 export interface Database {
@@ -293,6 +307,11 @@ export interface Database {
         Row: FormTeam;
         Insert: Omit<FormTeam, 'id' | 'created_at'>;
         Update: Partial<Omit<FormTeam, 'id' | 'created_at'>>;
+      };
+      notification_schedules: {
+        Row: NotificationSchedule;
+        Insert: Omit<NotificationSchedule, 'id' | 'created_at' | 'updated_at'>;
+        Update: Partial<Omit<NotificationSchedule, 'id' | 'created_at' | 'updated_at'>>;
       };
     };
   };
