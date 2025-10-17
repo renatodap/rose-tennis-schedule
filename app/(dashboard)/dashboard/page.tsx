@@ -10,12 +10,35 @@ import { useUser } from '@/lib/hooks/useUser';
 import { getClient } from '@/lib/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileText } from 'lucide-react';
+import { QuickActionsCard } from '@/components/dashboard/QuickActionsCard';
+import { UnifiedAddItemDialog } from '@/components/schedule/UnifiedAddItemDialog';
+import { useUnifiedSchedule } from '@/lib/hooks/useUnifiedSchedule';
+import { useToast } from '@/lib/hooks/use-toast';
+import { getCurrentQuarter } from '@/lib/utils/quarters';
+import { QUARTERS } from '@/lib/constants';
 
 export default function DashboardPage() {
   const { profile } = useUser();
+  const { toast } = useToast();
   const [pendingFormsCount, setPendingFormsCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [isAddClassDialogOpen, setIsAddClassDialogOpen] = useState(false);
   const supabase = getClient();
+
+  // Get current quarter for class schedules
+  const currentQuarter = getCurrentQuarter();
+  const currentYear = new Date().getFullYear();
+
+  // Determine quarter/year for schedule operations
+  // Default to Fall 2025 if no current quarter
+  const scheduleQuarter: 'fall' | 'winter' | 'spring' | 'summer' =
+    currentQuarter ? (currentQuarter.name.split(' ')[0].toLowerCase() as 'fall' | 'winter' | 'spring' | 'summer') : 'fall';
+  const scheduleYear = currentQuarter ? parseInt(currentQuarter.name.match(/\d{4}/)?.[0] || String(currentYear)) : 2025;
+
+  const { addMultiDayClass } = useUnifiedSchedule({
+    quarter: scheduleQuarter,
+    year: scheduleYear
+  });
 
   useEffect(() => {
     if (!profile) return;
@@ -64,6 +87,41 @@ export default function DashboardPage() {
     fetchDashboardData();
   }, [profile, supabase]);
 
+  const handleSaveClass = async (data: {
+    type: 'class' | 'availability' | 'blocker';
+    days?: number[];
+    startTime: string;
+    endTime: string;
+    courseName?: string;
+    location?: string;
+    quarter?: string;
+  }) => {
+    try {
+      if (data.type === 'class' && data.days) {
+        await addMultiDayClass({
+          days: data.days,
+          startTime: data.startTime,
+          endTime: data.endTime,
+          courseName: data.courseName,
+          location: data.location,
+        });
+
+        toast({
+          title: 'Classes added!',
+          description: `Successfully added ${data.days.length} class${data.days.length > 1 ? 'es' : ''} to your schedule`,
+        });
+      }
+    } catch (error) {
+      console.error('Failed to save class:', error);
+      toast({
+        title: 'Failed to add class',
+        description: error instanceof Error ? error.message : 'Please try again',
+        variant: 'destructive',
+      });
+      throw error;
+    }
+  };
+
   if (!profile) {
     return null;
   }
@@ -79,6 +137,9 @@ export default function DashboardPage() {
           Here&apos;s what&apos;s happening with your team today.
         </p>
       </div>
+
+      {/* Quick Actions */}
+      <QuickActionsCard onAddClassClick={() => setIsAddClassDialogOpen(true)} />
 
       {/* Quick stats cards */}
       <div className="grid gap-4 md:grid-cols-2">
@@ -98,6 +159,13 @@ export default function DashboardPage() {
         </Card>
       </div>
 
+      {/* Add Class Dialog */}
+      <UnifiedAddItemDialog
+        open={isAddClassDialogOpen}
+        onOpenChange={setIsAddClassDialogOpen}
+        onSave={handleSaveClass}
+        initialType="class"
+      />
     </div>
   );
 }

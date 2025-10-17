@@ -21,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { getDefaultQuarterValue } from '@/lib/utils/quarters';
 
 export type ItemType = 'class' | 'availability' | 'blocker';
 
@@ -62,6 +63,17 @@ const QUARTER_OPTIONS = [
   { label: 'Winter 2025-26', value: 'winter_2025_26' },
   { label: 'Spring 2026', value: 'spring_2026' },
   { label: 'Summer 2026', value: 'summer_2026' },
+];
+
+const TIME_PRESETS = [
+  { label: '8-9 AM', start: '08:00', end: '09:00' },
+  { label: '9-10 AM', start: '09:00', end: '10:00' },
+  { label: '10-11 AM', start: '10:00', end: '11:00' },
+  { label: '11-12 PM', start: '11:00', end: '12:00' },
+  { label: '12-1 PM', start: '12:00', end: '13:00' },
+  { label: '1-2 PM', start: '13:00', end: '14:00' },
+  { label: '2-3 PM', start: '14:00', end: '15:00' },
+  { label: '3-4 PM', start: '15:00', end: '16:00' },
 ];
 
 export function UnifiedAddItemDialog({
@@ -115,7 +127,7 @@ export function UnifiedAddItemDialog({
       setEndTime('10:00');
       setCourseName('');
       setLocation('');
-      setQuarter('fall_2025');
+      setQuarter(getDefaultQuarterValue()); // Smart quarter detection
       setReason('');
       setNotes('');
       setIsRecurring(false);
@@ -392,6 +404,38 @@ export function UnifiedAddItemDialog({
               </Label>
             </div>
           )}
+
+          {/* Time Presets */}
+          <div className="grid gap-2">
+            <Label>Quick Time Select</Label>
+            <div className="flex flex-wrap gap-2">
+              {TIME_PRESETS.map((preset) => (
+                <button
+                  key={preset.label}
+                  type="button"
+                  onClick={() => {
+                    setStartTime(preset.start);
+                    setEndTime(preset.end);
+                    setError('');
+                  }}
+                  className={cn(
+                    'px-3 py-1.5 text-xs font-medium rounded-md border transition-colors',
+                    startTime === preset.start && endTime === preset.end
+                      ? 'text-white border-transparent'
+                      : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                  )}
+                  style={
+                    startTime === preset.start && endTime === preset.end
+                      ? { backgroundColor: BRAND_COLORS.PRIMARY }
+                      : undefined
+                  }
+                >
+                  {preset.label}
+                </button>
+              ))}
+            </div>
+            <p className="text-xs text-gray-500">Or set custom times below</p>
+          </div>
 
           {/* Time Selection */}
           <div className="grid grid-cols-2 gap-4">

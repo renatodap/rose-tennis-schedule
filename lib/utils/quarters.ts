@@ -236,3 +236,35 @@ export function formatQuarterName(quarterKey: QuarterKey): string {
 export function isInAcademicYear(date?: string | Date): boolean {
   return getCurrentQuarter(date) !== null;
 }
+
+/**
+ * Gets the most relevant quarter value for the add class dialog
+ * Returns current quarter if in one, otherwise returns next upcoming quarter
+ * Returns value in format: 'fall_2025', 'winter_2025_26', etc.
+ *
+ * @param date - Optional date to check (defaults to today)
+ * @returns Quarter value string or 'fall_2025' as fallback
+ */
+export function getDefaultQuarterValue(date?: string | Date): string {
+  const currentQuarter = getCurrentQuarter(date);
+
+  if (currentQuarter) {
+    // We're in a quarter, return its key
+    const key = getCurrentQuarterKey(date);
+    return key ? key.toLowerCase() : 'fall_2025';
+  }
+
+  // We're in a break, get the next quarter
+  const nextQuarter = getNextQuarter(date);
+  if (nextQuarter) {
+    // Find the key for this quarter
+    for (const [key, quarter] of Object.entries(QUARTERS)) {
+      if (quarter.name === nextQuarter.name) {
+        return key.toLowerCase();
+      }
+    }
+  }
+
+  // Fallback to fall_2025
+  return 'fall_2025';
+}
