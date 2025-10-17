@@ -233,6 +233,20 @@ export interface NotificationSchedule {
 }
 
 /**
+ * PWA Push notification subscription
+ */
+export interface PushSubscription {
+  id: string; // UUID
+  user_id: string; // References User.id
+  endpoint: string; // Push service endpoint URL
+  p256dh: string; // Encryption key
+  auth: string; // Authentication secret
+  user_agent?: string; // Browser/device info
+  last_used_at: string; // ISO timestamp
+  created_at: string; // ISO timestamp
+}
+
+/**
  * Database tables type map
  */
 export interface Database {
@@ -312,6 +326,11 @@ export interface Database {
         Row: NotificationSchedule;
         Insert: Omit<NotificationSchedule, 'id' | 'created_at' | 'updated_at'>;
         Update: Partial<Omit<NotificationSchedule, 'id' | 'created_at' | 'updated_at'>>;
+      };
+      push_subscriptions: {
+        Row: PushSubscription;
+        Insert: Omit<PushSubscription, 'id' | 'created_at'>;
+        Update: Partial<Omit<PushSubscription, 'id' | 'created_at'>>;
       };
     };
   };

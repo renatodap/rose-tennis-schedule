@@ -8,6 +8,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
 import { generateReminderEmail } from '@/lib/notifications/templates';
+import { sendPushNotification } from '@/lib/notifications/sendPush';
 import { Event, User, NotificationSchedule } from '@/lib/types/database.types';
 
 // Initialize Supabase client with service role (bypasses RLS)
@@ -127,14 +128,47 @@ export async function GET(request: NextRequest) {
           html,
         });
 
+        let emailSuccess = true;
         if (emailResult.error) {
           console.error(`Error sending email to ${user.email}:`, emailResult.error);
+          emailSuccess = false;
+        }
+
+        // Send push notification
+        const pushPayload = {
+          title: subject,
+          body: event.title,
+          icon: '/icon-192x192.svg',
+          badge: '/icon-192x192.svg',
+          tag: `event-${event.id}`,
+          data: {
+            url: `/events?event=${event.id}`,
+            eventId: event.id,
+          },
+          actions: [
+            {
+              action: 'rsvp',
+              title: 'RSVP Now',
+            },
+            {
+              action: 'view',
+              title: 'View Details',
+            },
+          ],
+        };
+
+        const pushResult = await sendPushNotification(user.id, pushPayload);
+        console.log(`Push notification result for ${user.email}: ${pushResult.sentCount} sent, ${pushResult.failedCount} failed`);
+
+        // Consider it a success if either email or push worked
+        if (!emailSuccess && !pushResult.success) {
+          console.error(`Failed to send notification to ${user.email} via both email and push`);
           failureCount++;
           results.push({
             notification_id: notification.id,
             user_email: user.email,
             status: 'failed',
-            error: emailResult.error,
+            error: 'Both email and push failed',
           });
           continue;
         }
@@ -151,6 +185,9 @@ export async function GET(request: NextRequest) {
           user_email: user.email,
           status: 'sent',
           email_id: emailResult.data?.id,
+          email_success: emailSuccess,
+          push_sent: pushResult.sentCount,
+          push_failed: pushResult.failedCount,
         });
 
         console.log(`Sent ${notification.notification_type} reminder to ${user.email} for event ${event.title}`);

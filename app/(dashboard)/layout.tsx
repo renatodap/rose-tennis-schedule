@@ -12,6 +12,7 @@ import { useAuth } from '@/lib/hooks/useAuth';
 import { useUser } from '@/lib/hooks/useUser';
 import { Button } from '@/components/ui/button';
 import { CompleteProfileDialog } from '@/components/auth/CompleteProfileDialog';
+import NotificationPermissionPrompt from '@/components/notifications/NotificationPermissionPrompt';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -325,6 +326,9 @@ export default function DashboardLayout({
 
       {/* Bottom padding for mobile nav */}
       <div className="h-16 lg:hidden" aria-hidden="true" />
+
+      {/* Notification permission prompt */}
+      <NotificationPermissionPrompt />
     </div>
   );
 }
