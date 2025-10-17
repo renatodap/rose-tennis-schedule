@@ -32,6 +32,14 @@ export interface EventWithRsvp extends Event {
     response: 'going' | 'not_going' | 'maybe' | 'no_response';
     response_datetime: string | null;
   };
+  attendees?: Array<{
+    id: string;
+    first_name: string;
+    last_name: string;
+    gender?: string;
+    team_level?: string;
+  }>;
+  attendee_count?: number;
 }
 
 /**
@@ -57,35 +65,48 @@ export function useEvents() {
       setLoading(true);
       setError(null);
 
-      // Get user's team memberships
-      const { data: userTeamsData, error: userTeamsError } = await supabase
-        .from('user_teams')
-        .select('team_id')
-        .eq('user_id', profile.id);
+      let eventIds: string[] = [];
 
-      if (userTeamsError) throw userTeamsError;
+      // Coaches and captains see ALL events
+      if (profile.role === 'coach' || profile.role === 'captain') {
+        // Fetch all events for admins
+        const { data: allEventsData, error: allEventsError } = await supabase
+          .from('events')
+          .select('id');
 
-      const userTeamIds = userTeamsData?.map(ut => ut.team_id) || [];
+        if (allEventsError) throw allEventsError;
+        eventIds = (allEventsData || []).map(e => e.id);
+      } else {
+        // Regular players: filter by their team memberships
+        const { data: userTeamsData, error: userTeamsError } = await supabase
+          .from('user_teams')
+          .select('team_id')
+          .eq('user_id', profile.id);
 
-      if (userTeamIds.length === 0) {
-        // User is not on any teams (e.g., coach), show no events
-        setEvents([]);
-        setLoading(false);
-        return;
+        if (userTeamsError) throw userTeamsError;
+
+        const userTeamIds = userTeamsData?.map(ut => ut.team_id) || [];
+
+        if (userTeamIds.length === 0) {
+          // User is not on any teams, show no events
+          setEvents([]);
+          setLoading(false);
+          return;
+        }
+
+        // Get events that target the user's teams
+        const { data: eventTeamsData, error: eventTeamsError } = await supabase
+          .from('event_teams')
+          .select('event_id')
+          .in('team_id', userTeamIds);
+
+        if (eventTeamsError) throw eventTeamsError;
+
+        eventIds = eventTeamsData?.map(et => et.event_id) || [];
       }
 
-      // Get events that target the user's teams
-      const { data: eventTeamsData, error: eventTeamsError } = await supabase
-        .from('event_teams')
-        .select('event_id')
-        .in('team_id', userTeamIds);
-
-      if (eventTeamsError) throw eventTeamsError;
-
-      const eventIds = eventTeamsData?.map(et => et.event_id) || [];
-
       if (eventIds.length === 0) {
-        // No events target user's teams
+        // No events found
         setEvents([]);
         setLoading(false);
         return;
@@ -102,25 +123,55 @@ export function useEvents() {
         throw fetchError;
       }
 
-      // Fetch user's RSVPs for these events
       const fetchedEventIds = (eventsData || []).map(e => e.id);
+
+      // Fetch user's RSVPs for these events
       const { data: rsvpsData } = await supabase
         .from('event_responses')
         .select('*')
         .eq('user_id', profile.id)
         .in('event_id', fetchedEventIds);
 
-      // Create a map of event_id to RSVP
+      // Fetch ALL RSVPs for social proof (attendee avatars)
+      const { data: allRsvpsData } = await supabase
+        .from('event_responses')
+        .select(`
+          *,
+          users:user_id (
+            id,
+            first_name,
+            last_name,
+            gender,
+            team_level
+          )
+        `)
+        .in('event_id', fetchedEventIds)
+        .eq('response', 'going');
+
+      // Create a map of event_id to user RSVP
       const rsvpMap = new Map(
         (rsvpsData || []).map(rsvp => [rsvp.event_id, rsvp])
       );
 
-      // Transform the data to include user's RSVP
+      // Create a map of event_id to all attendees going
+      const attendeesMap = new Map<string, any[]>();
+      (allRsvpsData || []).forEach(rsvp => {
+        const eventId = rsvp.event_id;
+        if (!attendeesMap.has(eventId)) {
+          attendeesMap.set(eventId, []);
+        }
+        attendeesMap.get(eventId)!.push(rsvp.users);
+      });
+
+      // Transform the data to include user's RSVP and attendees
       const eventsWithRsvp = (eventsData || []).map((event: any) => {
         const userRsvp = rsvpMap.get(event.id);
+        const attendees = attendeesMap.get(event.id) || [];
         return {
           ...event,
           user_rsvp: userRsvp || undefined,
+          attendees, // Array of users who are going
+          attendee_count: attendees.length,
         };
       });
 

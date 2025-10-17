@@ -4,6 +4,7 @@
  * RSVP button group for event responses
  * Shows three buttons: Going, Maybe, Not Going
  * Highlights current selection and handles optimistic updates
+ * Enhanced with haptic feedback and visual animations
  */
 
 import { useState } from 'react';
@@ -11,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Check, X, HelpCircle } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { useEventRsvp, RsvpResponse } from '@/lib/hooks/useEventRsvp';
+import { triggerHaptic } from '@/lib/utils/confetti';
 
 interface RsvpButtonsProps {
   eventId: string;
@@ -31,6 +33,9 @@ export function RsvpButtons({
   const handleRsvp = async (response: RsvpResponse) => {
     // Optimistic update
     setOptimisticResponse(response);
+
+    // Haptic feedback
+    triggerHaptic('light');
 
     const success = await updateRsvp(eventId, response);
 

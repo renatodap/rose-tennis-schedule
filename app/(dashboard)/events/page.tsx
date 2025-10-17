@@ -9,7 +9,7 @@
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { EventCard } from '@/components/events/EventCard';
+import { CompactEventList } from '@/components/events/CompactEventList';
 import { useEvents } from '@/lib/hooks/useEvents';
 import { CalendarDays, Loader2 } from 'lucide-react';
 import { BRAND_COLORS } from '@/lib/constants';
@@ -134,11 +134,10 @@ export default function EventsPage() {
                     <span className="inline-block w-3 h-3 bg-red-600 rounded-full"></span>
                     Mandatory Events
                   </h2>
-                  {filteredUpcoming
-                    .filter(e => e.event_type === 'mandatory')
-                    .map(event => (
-                      <EventCard key={event.id} event={event} onRsvpChange={refresh} />
-                    ))}
+                  <CompactEventList
+                    events={filteredUpcoming.filter(e => e.event_type === 'mandatory')}
+                    onRsvpChange={refresh}
+                  />
                 </div>
               )}
 
@@ -149,11 +148,10 @@ export default function EventsPage() {
                     <span className="inline-block w-3 h-3 bg-orange-600 rounded-full"></span>
                     Recommended Events
                   </h2>
-                  {filteredUpcoming
-                    .filter(e => e.event_type === 'recommended')
-                    .map(event => (
-                      <EventCard key={event.id} event={event} onRsvpChange={refresh} />
-                    ))}
+                  <CompactEventList
+                    events={filteredUpcoming.filter(e => e.event_type === 'recommended')}
+                    onRsvpChange={refresh}
+                  />
                 </div>
               )}
 
@@ -164,11 +162,10 @@ export default function EventsPage() {
                     <span className="inline-block w-3 h-3 bg-green-600 rounded-full"></span>
                     Optional Events
                   </h2>
-                  {filteredUpcoming
-                    .filter(e => e.event_type === 'optional')
-                    .map(event => (
-                      <EventCard key={event.id} event={event} onRsvpChange={refresh} />
-                    ))}
+                  <CompactEventList
+                    events={filteredUpcoming.filter(e => e.event_type === 'optional')}
+                    onRsvpChange={refresh}
+                  />
                 </div>
               )}
             </>
@@ -191,9 +188,7 @@ export default function EventsPage() {
               </p>
             </div>
           ) : (
-            filteredPast.map(event => (
-              <EventCard key={event.id} event={event} onRsvpChange={refresh} readOnly />
-            ))
+            <CompactEventList events={filteredPast} onRsvpChange={refresh} />
           )}
         </TabsContent>
 
@@ -219,9 +214,7 @@ export default function EventsPage() {
                     <span className="inline-block w-3 h-3 bg-green-600 rounded-full"></span>
                     Going ({goingEvents.length})
                   </h2>
-                  {goingEvents.map(event => (
-                    <EventCard key={event.id} event={event} onRsvpChange={refresh} />
-                  ))}
+                  <CompactEventList events={goingEvents} onRsvpChange={refresh} />
                 </div>
               )}
 
@@ -232,9 +225,7 @@ export default function EventsPage() {
                     <span className="inline-block w-3 h-3 bg-yellow-600 rounded-full"></span>
                     Maybe ({maybeEvents.length})
                   </h2>
-                  {maybeEvents.map(event => (
-                    <EventCard key={event.id} event={event} onRsvpChange={refresh} />
-                  ))}
+                  <CompactEventList events={maybeEvents} onRsvpChange={refresh} />
                 </div>
               )}
 
@@ -245,9 +236,7 @@ export default function EventsPage() {
                     <span className="inline-block w-3 h-3 bg-red-600 rounded-full"></span>
                     Not Going ({notGoingEvents.length})
                   </h2>
-                  {notGoingEvents.map(event => (
-                    <EventCard key={event.id} event={event} onRsvpChange={refresh} />
-                  ))}
+                  <CompactEventList events={notGoingEvents} onRsvpChange={refresh} />
                 </div>
               )}
             </>
