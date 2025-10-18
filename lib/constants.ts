@@ -69,7 +69,17 @@ export enum TeamLevel {
 export enum EventType {
   OPTIONAL = 'optional',
   RECOMMENDED = 'recommended',
-  MANDATORY = 'mandatory'
+  MANDATORY = 'mandatory',
+  MATCH = 'match'
+}
+
+/**
+ * Match location types
+ */
+export enum HomeAwayType {
+  HOME = 'home',
+  AWAY = 'away',
+  NEUTRAL = 'neutral'
 }
 
 /**

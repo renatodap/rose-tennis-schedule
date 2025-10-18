@@ -3,7 +3,7 @@
  * These types mirror the Supabase database schema
  */
 
-import { UserRole, Gender, TeamLevel, EventType, ResponseStatus, AvailabilityStatus } from '../constants';
+import { UserRole, Gender, TeamLevel, EventType, ResponseStatus, AvailabilityStatus, HomeAwayType } from '../constants';
 
 /**
  * User profile information
@@ -107,6 +107,12 @@ export interface Event {
   gender?: Gender; // null means all genders
   team_level?: TeamLevel; // null means all levels
   created_by: string; // References User.id
+  // Match-specific fields
+  opponent?: string; // Opposing team name (for match events)
+  home_away?: HomeAwayType; // Home/away/neutral (for match events)
+  match_result?: string; // Match result (e.g., "W, 4-3" or "L, 5-0")
+  is_conference_match?: boolean; // HCAC conference match flag
+  external_url?: string; // Link to live video, box score, etc.
   created_at: string; // ISO timestamp
   updated_at: string; // ISO timestamp
 }

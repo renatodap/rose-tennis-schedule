@@ -8,7 +8,7 @@
 
 import { cn } from '@/lib/utils/cn';
 import { BRAND_COLORS } from '@/lib/constants';
-import { GraduationCap, Clock, Ban, AlertCircle } from 'lucide-react';
+import { GraduationCap, Clock, Ban, AlertCircle, Trophy } from 'lucide-react';
 
 export interface CalendarEvent {
   id: string;
@@ -16,9 +16,11 @@ export interface CalendarEvent {
   dayOfWeek: number; // 0 = Sunday, 6 = Saturday
   startTime: string; // HH:MM format
   endTime: string; // HH:MM format
-  type: 'class' | 'blocker' | 'availability' | 'event';
+  type: 'class' | 'blocker' | 'availability' | 'event' | 'match';
   location?: string;
   rsvpStatus?: 'going' | 'not_going' | 'maybe' | 'no_response'; // For events
+  opponent?: string; // For matches
+  homeAway?: 'home' | 'away' | 'neutral'; // For matches
 }
 
 interface WeekViewProps {
@@ -44,7 +46,7 @@ function timeToMinutes(time: string): number {
   return hours * 60 + minutes;
 }
 
-function getEventColor(type: CalendarEvent['type'], rsvpStatus?: 'going' | 'not_going' | 'maybe' | 'no_response'): { bg: string; border: string; text: string } {
+function getEventColor(type: CalendarEvent['type'], rsvpStatus?: 'going' | 'not_going' | 'maybe' | 'no_response', homeAway?: 'home' | 'away' | 'neutral'): { bg: string; border: string; text: string } {
   switch (type) {
     case 'class':
       return {
@@ -64,6 +66,27 @@ function getEventColor(type: CalendarEvent['type'], rsvpStatus?: 'going' | 'not_
         border: '#15803d',
         text: '#ffffff'
       };
+    case 'match':
+      // Different colors for home vs away matches
+      if (homeAway === 'home') {
+        return {
+          bg: '#16a34a', // Green - home match
+          border: '#15803d',
+          text: '#ffffff'
+        };
+      } else if (homeAway === 'away') {
+        return {
+          bg: '#2563eb', // Blue - away match
+          border: '#1e40af',
+          text: '#ffffff'
+        };
+      } else {
+        return {
+          bg: '#6b7280', // Gray - neutral site
+          border: '#4b5563',
+          text: '#ffffff'
+        };
+      }
     case 'event':
       // Different colors based on RSVP status
       if (rsvpStatus === 'going') {
@@ -108,6 +131,8 @@ function getTypeIcon(type: CalendarEvent['type']) {
       return <Ban className="h-3 w-3 sm:h-4 sm:w-4" />;
     case 'availability':
       return <Clock className="h-3 w-3 sm:h-4 sm:w-4" />;
+    case 'match':
+      return <Trophy className="h-3 w-3 sm:h-4 sm:w-4" />;
     default:
       return null;
   }
@@ -123,6 +148,8 @@ function getTypeLabel(type: CalendarEvent['type']): string {
       return 'Available';
     case 'event':
       return 'Event';
+    case 'match':
+      return 'Match';
     default:
       return 'Unknown';
   }
@@ -198,6 +225,20 @@ export function WeekView({ events, selectedDate, onSlotClick, onEventClick, show
           <div className="flex items-center gap-1">
             <div className="w-4 h-4 rounded bg-red-600" />
             <span className="font-medium text-gray-700">Not Going</span>
+          </div>
+          <span className="text-gray-500 hidden sm:inline">|</span>
+          <span className="font-semibold text-gray-700 hidden sm:inline">Matches:</span>
+          <div className="flex items-center gap-1">
+            <div className="flex items-center justify-center w-4 h-4 rounded bg-green-600">
+              <Trophy className="h-2 w-2 sm:h-2.5 sm:w-2.5 text-white" />
+            </div>
+            <span className="font-medium text-gray-700">Home</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <div className="flex items-center justify-center w-4 h-4 rounded bg-blue-600">
+              <Trophy className="h-2 w-2 sm:h-2.5 sm:w-2.5 text-white" />
+            </div>
+            <span className="font-medium text-gray-700">Away</span>
           </div>
           <div className="flex items-center gap-1 sm:ml-auto">
             <AlertCircle className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-yellow-600" />
@@ -280,7 +321,7 @@ export function WeekView({ events, selectedDate, onSlotClick, onEventClick, show
                           const top = Math.max(0, ((eventStart - hourStart) / 60) * 100);
                           const bottom = Math.max(0, ((hourEnd - eventEnd) / 60) * 100);
 
-                          const colors = getEventColor(event.type, event.rsvpStatus);
+                          const colors = getEventColor(event.type, event.rsvpStatus, event.homeAway);
                           const hasOverlap = hasConflict(event, events);
 
                           return (

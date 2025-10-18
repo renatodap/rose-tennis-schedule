@@ -32,6 +32,7 @@ import {
   Menu,
   X,
   Swords,
+  Trophy,
 } from 'lucide-react';
 
 export default function DashboardLayout({
@@ -101,6 +102,7 @@ export default function DashboardLayout({
   const navigation = [
     { name: 'Home', href: '/dashboard', icon: Home },
     { name: 'Schedule', href: '/schedule', icon: Calendar },
+    { name: 'Matches', href: '/matches', icon: Trophy },
     { name: 'Events', href: '/events', icon: CalendarDays },
     { name: 'Challenges', href: '/challenges', icon: Swords },
     { name: 'Profile', href: '/profile', icon: User },
