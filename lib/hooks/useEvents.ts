@@ -17,7 +17,7 @@ export interface Event {
   start_datetime: string;
   end_datetime: string;
   location: string | null;
-  event_type: 'optional' | 'recommended' | 'mandatory';
+  event_type: 'optional' | 'recommended' | 'mandatory' | 'match';
   applies_to_men: boolean;
   applies_to_women: boolean;
   applies_to_jv: boolean;
@@ -25,6 +25,12 @@ export interface Event {
   created_by: string;
   created_at: string;
   updated_at: string;
+  // Match-specific fields
+  opponent?: string;
+  home_away?: 'home' | 'away' | 'neutral';
+  match_result?: string;
+  is_conference_match?: boolean;
+  external_url?: string;
 }
 
 export interface EventWithRsvp extends Event {
