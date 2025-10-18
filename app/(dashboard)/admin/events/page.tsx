@@ -88,12 +88,14 @@ export default function AdminEventsPage() {
     mandatory: 'bg-red-100 text-red-800 border-red-300',
     recommended: 'bg-orange-100 text-orange-800 border-orange-300',
     optional: 'bg-green-100 text-green-800 border-green-300',
+    match: 'bg-blue-100 text-blue-800 border-blue-300',
   };
 
   const eventTypeLabels = {
     mandatory: 'Mandatory',
     recommended: 'Recommended',
     optional: 'Optional',
+    match: 'Match',
   };
 
   return (
@@ -135,6 +137,7 @@ export default function AdminEventsPage() {
             <SelectItem value="mandatory">Mandatory</SelectItem>
             <SelectItem value="recommended">Recommended</SelectItem>
             <SelectItem value="optional">Optional</SelectItem>
+            <SelectItem value="match">Match</SelectItem>
           </SelectContent>
         </Select>
       </div>
