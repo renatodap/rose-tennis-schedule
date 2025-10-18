@@ -61,15 +61,12 @@ export default function MatchesPage() {
   const matchEvents = events.filter(event => event.event_type === EventType.MATCH);
 
   // Group matches by team
+  // Note: This is a client-side approximation. In production, we'd fetch event_teams
+  // For now, we'll show all matches to all teams since we can't reliably filter client-side
   const getMatchesByTeam = (teamId: string) => {
-    return matchEvents.filter(event => {
-      // Check if this event is targeted to this team
-      // This requires joining with event_teams, but for now we can use gender/team_level
-      const team = teams.find(t => t.id === teamId);
-      if (!team) return false;
-
-      return event.gender === team.gender && event.team_level === team.team_level;
-    });
+    // TODO: Fetch event_teams from database to properly filter
+    // For now, return all matches since we can't determine team assignment client-side
+    return matchEvents;
   };
 
   if (loading) {
