@@ -9,11 +9,13 @@
 import { cn } from '@/lib/utils/cn';
 import { BRAND_COLORS } from '@/lib/constants';
 import { GraduationCap, Clock, Ban, AlertCircle, Trophy } from 'lucide-react';
+import { parseISO, isSameDay, startOfWeek, addDays } from 'date-fns';
 
 export interface CalendarEvent {
   id: string;
   title: string;
   dayOfWeek: number; // 0 = Sunday, 6 = Saturday
+  date?: string; // YYYY-MM-DD for one-time events (events/matches)
   startTime: string; // HH:MM format
   endTime: string; // HH:MM format
   type: 'class' | 'blocker' | 'availability' | 'event' | 'match';
@@ -177,6 +179,9 @@ function hasConflict(event: CalendarEvent, allEvents: CalendarEvent[]): boolean 
 }
 
 export function WeekView({ events, selectedDate, onSlotClick, onEventClick, showLegend = true }: WeekViewProps) {
+  // Calculate week start from selected date
+  const weekStart = startOfWeek(selectedDate);
+
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     // Sync header scroll with content scroll
     const headerScroll = e.currentTarget.previousElementSibling?.querySelector('.flex-1') as HTMLDivElement;
@@ -289,9 +294,17 @@ export function WeekView({ events, selectedDate, onSlotClick, onEventClick, show
             {DAYS.map((_, dayIndex) => (
               <div key={dayIndex} className="w-[120px] sm:w-[140px] flex-shrink-0 border-r border-gray-200 last:border-r-0">
                 {HOURS.map((hour) => {
-                  const dayEvents = events.filter(
-                    (event) => event.dayOfWeek === dayIndex
-                  );
+                  const dayEvents = events.filter((event) => {
+                    // For recurring items (classes, recurring blockers) - match by day of week
+                    if (!event.date) {
+                      return event.dayOfWeek === dayIndex;
+                    }
+
+                    // For one-time items (events, matches) - match by exact date
+                    const eventDate = parseISO(event.date);
+                    const currentDay = addDays(weekStart, dayIndex);
+                    return isSameDay(eventDate, currentDay);
+                  });
 
                   return (
                     <div

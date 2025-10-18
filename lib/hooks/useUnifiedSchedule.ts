@@ -233,11 +233,14 @@ export function useUnifiedSchedule({ quarter, year }: UseUnifiedScheduleProps) {
           id: `event-${event.id}`,
           title: event.title,
           dayOfWeek: dayOfWeek,
+          date: format(startDate, 'yyyy-MM-dd'), // Add actual date for one-time events
           startTime: startTime,
           endTime: endTime,
-          type: 'event',
+          type: event.event_type === 'match' ? 'match' : 'event', // Distinguish matches from events
           location: event.location || undefined,
           rsvpStatus: rsvpResponse, // Add RSVP status for styling
+          opponent: event.opponent, // Add for matches
+          homeAway: event.home_away, // Add for matches
         });
       });
     }
