@@ -79,6 +79,7 @@ export function generateReminderEmail({
     mandatory: { bg: '#dc2626', text: 'MANDATORY' },
     recommended: { bg: '#ea580c', text: 'RECOMMENDED' },
     optional: { bg: '#16a34a', text: 'OPTIONAL' },
+    match: { bg: '#2563eb', text: 'MATCH' },
   };
 
   const typeColor = eventTypeColors[event.event_type];

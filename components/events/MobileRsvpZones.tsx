@@ -16,7 +16,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 interface MobileRsvpZonesProps {
   eventId: string;
-  eventType: 'optional' | 'recommended' | 'mandatory';
+  eventType: 'optional' | 'recommended' | 'mandatory' | 'match';
   currentResponse?: RsvpResponse;
   onResponseChange?: () => void;
 }
