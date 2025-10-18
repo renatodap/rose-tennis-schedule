@@ -207,46 +207,88 @@ export function RideShareCard({
       )}
 
       {/* Actions */}
-      <div className="flex gap-2 mt-4">
+      <div className="flex flex-col gap-2 mt-4">
         {/* Non-driver can request ride */}
         {!isDriver && !myRequest && ride.status === 'active' && spotsLeft > 0 && onRequest && (
           <Button
             onClick={handleRequest}
             disabled={isRequesting}
-            className="flex-1"
-            size="sm"
+            className="w-full bg-blue-600 hover:bg-blue-700"
+            size="default"
           >
             <Users className="w-4 h-4 mr-2" />
-            {isRequesting ? 'Requesting...' : 'Request Ride'}
+            {isRequesting ? 'Sending Request...' : 'Request a Spot'}
           </Button>
+        )}
+
+        {/* Ride is full */}
+        {!isDriver && !myRequest && ride.status === 'active' && spotsLeft === 0 && (
+          <div className="w-full text-center p-3 bg-gray-100 rounded-lg text-sm text-gray-700 font-medium">
+            This ride is full
+          </div>
         )}
 
         {/* Show my request status */}
         {myRequest && myRequest.status === 'pending' && (
-          <div className="flex-1 text-center p-2 bg-amber-50 rounded text-sm text-amber-800">
-            Request pending...
+          <div className="w-full">
+            <div className="text-center p-3 bg-amber-50 rounded-lg border border-amber-200">
+              <div className="text-sm font-medium text-amber-900 mb-1">Request Pending</div>
+              <p className="text-xs text-amber-700">
+                Waiting for {ride.driver.first_name} to confirm your spot
+              </p>
+            </div>
+            {onCancelRequest && (
+              <Button
+                onClick={() => onCancelRequest(myRequest.id)}
+                variant="ghost"
+                size="sm"
+                className="w-full mt-2 text-gray-600"
+              >
+                Cancel Request
+              </Button>
+            )}
           </div>
         )}
 
         {myRequest && myRequest.status === 'confirmed' && (
-          <div className="flex-1 text-center p-2 bg-green-50 rounded text-sm text-green-800 flex items-center justify-center gap-2">
-            <Check className="w-4 h-4" />
-            Confirmed!
+          <div className="w-full text-center p-3 bg-green-50 rounded-lg border border-green-200">
+            <div className="flex items-center justify-center gap-2 text-sm font-medium text-green-900 mb-1">
+              <Check className="w-4 h-4" />
+              Spot Confirmed!
+            </div>
+            <p className="text-xs text-green-700">
+              You&apos;re riding with {ride.driver.first_name}
+            </p>
           </div>
         )}
 
-        {/* Driver can cancel offer */}
-        {isDriver && ride.status !== 'cancelled' && onCancelOffer && (
-          <Button
-            onClick={handleCancelOffer}
-            disabled={isCancelling}
-            variant="outline"
-            size="sm"
-            className="flex-1"
-          >
-            <X className="w-4 h-4 mr-2" />
-            {isCancelling ? 'Cancelling...' : 'Cancel Ride'}
-          </Button>
+        {/* Driver view - more prominent */}
+        {isDriver && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center">
+                <Car className="w-3 h-3 text-white" />
+              </div>
+              <span className="text-sm font-semibold text-blue-900">You&apos;re the driver</span>
+            </div>
+            {pendingRequests.length > 0 && (
+              <p className="text-xs text-blue-700 mb-3">
+                You have {pendingRequests.length} pending {pendingRequests.length === 1 ? 'request' : 'requests'}
+              </p>
+            )}
+            {ride.status !== 'cancelled' && onCancelOffer && (
+              <Button
+                onClick={handleCancelOffer}
+                disabled={isCancelling}
+                variant="outline"
+                size="sm"
+                className="w-full border-red-300 text-red-700 hover:bg-red-50"
+              >
+                <X className="w-4 h-4 mr-2" />
+                {isCancelling ? 'Cancelling...' : 'Cancel This Ride Offer'}
+              </Button>
+            )}
+          </div>
         )}
       </div>
     </motion.div>

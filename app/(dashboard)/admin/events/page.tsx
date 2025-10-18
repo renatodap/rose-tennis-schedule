@@ -256,8 +256,8 @@ export default function AdminEventsPage() {
                     </p>
                   )}
 
-                  {/* RSVP Summary */}
-                  {summary && (
+                  {/* RSVP Summary - Only show for non-match events */}
+                  {summary && event.event_type !== 'match' && (
                     <div className="pt-3 border-t border-gray-200">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm font-medium text-gray-700">RSVP Summary</span>
@@ -270,7 +270,7 @@ export default function AdminEventsPage() {
                           View Details
                         </Button>
                       </div>
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 flex-wrap">
                         <div className="flex items-center gap-1 text-xs">
                           <span className="inline-block w-2 h-2 bg-green-600 rounded-full"></span>
                           <span className="font-medium">{summary.going}</span>

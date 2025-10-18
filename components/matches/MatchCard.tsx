@@ -14,7 +14,6 @@ import { Badge } from '@/components/ui/badge';
 import { Calendar, MapPin, Clock, Trophy, ExternalLink } from 'lucide-react';
 import { format } from 'date-fns';
 import { EventWithRsvp } from '@/lib/hooks/useEvents';
-import { RsvpButtons } from '../events/RsvpButtons';
 import { cn } from '@/lib/utils/cn';
 import { useState } from 'react';
 import { EventDetailsDialog } from '../events/EventDetailsDialog';
@@ -98,23 +97,6 @@ export function MatchCard({ event, onRsvpChange, readOnly = false }: MatchCardPr
                     HCAC
                   </Badge>
                 )}
-
-                {/* User RSVP Status */}
-                {event.user_rsvp && event.user_rsvp.response !== 'no_response' && (
-                  <Badge
-                    variant="outline"
-                    className={cn(
-                      'text-xs',
-                      event.user_rsvp.response === 'going' && 'bg-green-50 text-green-700 border-green-300',
-                      event.user_rsvp.response === 'maybe' && 'bg-yellow-50 text-yellow-700 border-yellow-300',
-                      event.user_rsvp.response === 'not_going' && 'bg-red-50 text-red-700 border-red-300'
-                    )}
-                  >
-                    {event.user_rsvp.response === 'going' && 'You\'re Going'}
-                    {event.user_rsvp.response === 'maybe' && 'You\'re Maybe'}
-                    {event.user_rsvp.response === 'not_going' && 'You\'re Not Going'}
-                  </Badge>
-                )}
               </div>
             </div>
           </div>
@@ -169,16 +151,6 @@ export function MatchCard({ event, onRsvpChange, readOnly = false }: MatchCardPr
               {event.description}
             </p>
           )}
-
-          {!readOnly && !isPastMatch && (
-            <div className="pt-2" onClick={(e) => e.stopPropagation()}>
-              <RsvpButtons
-                eventId={event.id}
-                currentResponse={event.user_rsvp?.response}
-                onResponseChange={onRsvpChange}
-              />
-            </div>
-          )}
         </CardContent>
       </Card>
 
@@ -186,8 +158,7 @@ export function MatchCard({ event, onRsvpChange, readOnly = false }: MatchCardPr
         event={event}
         open={showDetails}
         onOpenChange={setShowDetails}
-        onRsvpChange={onRsvpChange}
-        readOnly={readOnly || isPastMatch}
+        readOnly={true}
       />
     </>
   );

@@ -22,18 +22,20 @@ export default function MatchesPage() {
   const { events, loading, error, refresh } = useEvents();
   const supabase = getClient();
   const [teams, setTeams] = useState<Team[]>([]);
+  const [eventTeams, setEventTeams] = useState<Record<string, string[]>>({});
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [isCoachOrCaptain, setIsCoachOrCaptain] = useState(false);
 
   // Fetch teams and check user role
   useEffect(() => {
     const fetchTeamsAndRole = async () => {
-      // Fetch teams
+      // Fetch teams - prioritize varsity over JV, women's over men's
       const { data: teamsData } = await supabase
         .from('teams')
         .select('*')
         .eq('is_active', true)
-        .order('name', { ascending: true });
+        .order('team_level', { ascending: false }) // varsity before jv
+        .order('gender', { ascending: false }); // women before men
 
       if (teamsData) {
         setTeams(teamsData);
@@ -57,16 +59,38 @@ export default function MatchesPage() {
     fetchTeamsAndRole();
   }, [supabase]);
 
+  // Fetch event-team mappings
+  useEffect(() => {
+    const fetchEventTeams = async () => {
+      const { data: eventTeamsData } = await supabase
+        .from('event_teams')
+        .select('event_id, team_id');
+
+      if (eventTeamsData) {
+        // Build a map: event_id -> [team_ids]
+        const mapping: Record<string, string[]> = {};
+        eventTeamsData.forEach(({ event_id, team_id }) => {
+          if (!mapping[event_id]) {
+            mapping[event_id] = [];
+          }
+          mapping[event_id].push(team_id);
+        });
+        setEventTeams(mapping);
+      }
+    };
+
+    fetchEventTeams();
+  }, [supabase]);
+
   // Filter only match events
   const matchEvents = events.filter(event => event.event_type === EventType.MATCH);
 
-  // Group matches by team
-  // Note: This is a client-side approximation. In production, we'd fetch event_teams
-  // For now, we'll show all matches to all teams since we can't reliably filter client-side
+  // Get matches for a specific team
   const getMatchesByTeam = (teamId: string) => {
-    // TODO: Fetch event_teams from database to properly filter
-    // For now, return all matches since we can't determine team assignment client-side
-    return matchEvents;
+    return matchEvents.filter(event => {
+      const teamIds = eventTeams[event.id] || [];
+      return teamIds.includes(teamId);
+    });
   };
 
   if (loading) {
