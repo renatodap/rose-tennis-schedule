@@ -17,8 +17,8 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-// Initialize Resend
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Initialize Resend (use placeholder during build)
+const resend = new Resend(process.env.RESEND_API_KEY || 're_placeholder');
 
 export async function GET(request: NextRequest) {
   // Verify cron secret to prevent unauthorized access
