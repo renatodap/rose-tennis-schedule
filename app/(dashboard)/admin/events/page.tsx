@@ -100,25 +100,25 @@ export default function AdminEventsPage() {
 
   return (
     <div className="space-y-6 max-w-6xl">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900">
+          <h2 className="text-2xl font-bold tracking-tight text-gray-900">
             Event Management
-          </h1>
-          <p className="mt-2 text-gray-600">
+          </h2>
+          <p className="mt-1 text-sm text-gray-600">
             Create and manage team events
           </p>
         </div>
-        <Button onClick={() => setShowCreateDialog(true)}>
+        <Button onClick={() => setShowCreateDialog(true)} className="w-full sm:w-auto">
           <Plus className="mr-2 h-4 w-4" />
           Create Event
         </Button>
       </div>
 
       {/* Filters */}
-      <div className="flex items-center gap-3">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
         <Select value={timeFilter} onValueChange={(value: any) => setTimeFilter(value)}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-full sm:w-[180px]">
             <SelectValue placeholder="Filter by time" />
           </SelectTrigger>
           <SelectContent>
@@ -129,7 +129,7 @@ export default function AdminEventsPage() {
         </Select>
 
         <Select value={eventTypeFilter} onValueChange={setEventTypeFilter}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-full sm:w-[180px]">
             <SelectValue placeholder="Filter by type" />
           </SelectTrigger>
           <SelectContent>

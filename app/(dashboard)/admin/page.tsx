@@ -247,16 +247,16 @@ export default function AdminDashboardPage() {
   return (
     <div className="space-y-6">
       {/* Stats Overview */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
+            <CardTitle className="text-xs sm:text-sm font-medium">
               Total Players
             </CardTitle>
             <Users className="h-4 w-4 text-gray-500" aria-hidden="true" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalPlayers}</div>
+            <div className="text-xl sm:text-2xl font-bold">{stats.totalPlayers}</div>
             <p className="text-xs text-gray-500 mt-1">
               {stats.menCount} men, {stats.womenCount} women
             </p>
@@ -265,45 +265,45 @@ export default function AdminDashboardPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
+            <CardTitle className="text-xs sm:text-sm font-medium">
               Upcoming Events
             </CardTitle>
             <CalendarDays className="h-4 w-4 text-gray-500" aria-hidden="true" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.upcomingEventsCount}</div>
+            <div className="text-xl sm:text-2xl font-bold">{stats.upcomingEventsCount}</div>
             <p className="text-xs text-gray-500 mt-1">
-              Scheduled events
+              Scheduled
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
+            <CardTitle className="text-xs sm:text-sm font-medium">
               Active Forms
             </CardTitle>
             <FileText className="h-4 w-4 text-gray-500" aria-hidden="true" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.activeFormsCount}</div>
+            <div className="text-xl sm:text-2xl font-bold">{stats.activeFormsCount}</div>
             <p className="text-xs text-gray-500 mt-1">
-              Awaiting responses
+              Awaiting
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Week Availability
+            <CardTitle className="text-xs sm:text-sm font-medium">
+              Availability
             </CardTitle>
             <TrendingUp className="h-4 w-4 text-gray-500" aria-hidden="true" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.thisWeekAvailability}</div>
+            <div className="text-xl sm:text-2xl font-bold">{stats.thisWeekAvailability}</div>
             <p className="text-xs text-gray-500 mt-1">
-              Submissions this week
+              This week
             </p>
           </CardContent>
         </Card>
@@ -425,19 +425,19 @@ export default function AdminDashboardPage() {
       )}
 
       {/* Quick Actions */}
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Team Management</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-base sm:text-lg">Team Management</CardTitle>
+            <CardDescription className="text-xs sm:text-sm">
               Manage team members and roster
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-2 sm:space-y-3">
             <Button
               asChild
               variant="outline"
-              className="w-full justify-start"
+              className="w-full justify-start text-sm"
             >
               <Link href="/admin/users">
                 <Users className="mr-2 h-4 w-4" aria-hidden="true" />
@@ -447,7 +447,7 @@ export default function AdminDashboardPage() {
             <Button
               asChild
               variant="outline"
-              className="w-full justify-start"
+              className="w-full justify-start text-sm"
               disabled
             >
               <div>
@@ -460,16 +460,16 @@ export default function AdminDashboardPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Event Management</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-base sm:text-lg">Event Management</CardTitle>
+            <CardDescription className="text-xs sm:text-sm">
               Schedule and manage team events
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-2 sm:space-y-3">
             <Button
               asChild
               variant="outline"
-              className="w-full justify-start"
+              className="w-full justify-start text-sm"
             >
               <Link href="/admin/events">
                 <CalendarDays className="mr-2 h-4 w-4" aria-hidden="true" />
@@ -479,7 +479,7 @@ export default function AdminDashboardPage() {
             <Button
               asChild
               variant="outline"
-              className="w-full justify-start"
+              className="w-full justify-start text-sm"
             >
               <Link href="/admin/events">
                 <Calendar className="mr-2 h-4 w-4" aria-hidden="true" />
@@ -491,16 +491,16 @@ export default function AdminDashboardPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Forms & Surveys</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-base sm:text-lg">Forms & Surveys</CardTitle>
+            <CardDescription className="text-xs sm:text-sm">
               Create and manage team forms
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-2 sm:space-y-3">
             <Button
               asChild
               variant="outline"
-              className="w-full justify-start"
+              className="w-full justify-start text-sm"
             >
               <Link href="/admin/forms">
                 <FileText className="mr-2 h-4 w-4" aria-hidden="true" />
@@ -510,7 +510,7 @@ export default function AdminDashboardPage() {
             <Button
               asChild
               variant="outline"
-              className="w-full justify-start"
+              className="w-full justify-start text-sm"
             >
               <Link href="/admin/forms">
                 <ClipboardList className="mr-2 h-4 w-4" aria-hidden="true" />
@@ -522,16 +522,16 @@ export default function AdminDashboardPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Reports & Analytics</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-base sm:text-lg">Reports & Analytics</CardTitle>
+            <CardDescription className="text-xs sm:text-sm">
               View team insights and reports
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-2 sm:space-y-3">
             <Button
               asChild
               variant="outline"
-              className="w-full justify-start"
+              className="w-full justify-start text-sm"
             >
               <Link href="/admin/reports">
                 <BarChart3 className="mr-2 h-4 w-4" aria-hidden="true" />
@@ -541,7 +541,7 @@ export default function AdminDashboardPage() {
             <Button
               asChild
               variant="outline"
-              className="w-full justify-start"
+              className="w-full justify-start text-sm"
               disabled
             >
               <div>
