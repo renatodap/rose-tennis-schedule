@@ -1,25 +1,35 @@
 'use client';
 
 /**
- * Unified Schedule Page
- * Combines classes, availability, and blockers into one intuitive interface
- * Multi-day selection, conflict detection, and easy management
+ * Unified Schedule Page - Premium Calendar Experience
+ * $100M redesign with week/day views, intuitive navigation, and gorgeous UI
+ * Combines classes, availability, and blockers with premium athletic design
  */
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { WeekView, CalendarEvent } from '@/components/calendar/WeekView';
+import { DayView } from '@/components/calendar/DayView';
+import { CalendarHeader } from '@/components/calendar/CalendarHeader';
 import { UnifiedAddItemDialog, ItemType } from '@/components/schedule/UnifiedAddItemDialog';
 import { useUnifiedSchedule } from '@/lib/hooks/useUnifiedSchedule';
 import { BRAND_COLORS } from '@/lib/constants';
-import { Plus, Calendar, Filter } from 'lucide-react';
+import { Plus, GraduationCap, Clock, Ban, Trophy, Calendar as CalendarIcon, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { useToast } from '@/lib/hooks/use-toast';
+import { addDays, addWeeks, subWeeks, startOfWeek } from 'date-fns';
+import { colors } from '@/lib/design-tokens';
+
+type ViewType = 'week' | 'day' | 'list';
 
 export default function UnifiedSchedulePage() {
   const { toast } = useToast();
   const [selectedQuarter] = useState<'fall' | 'winter' | 'spring' | 'summer'>('fall');
   const [selectedYear] = useState<number>(2025);
+
+  // View state
+  const [view, setView] = useState<ViewType>('week');
+  const [currentDate, setCurrentDate] = useState<Date>(new Date());
 
   const {
     calendarEvents,
@@ -38,12 +48,28 @@ export default function UnifiedSchedulePage() {
   const [initialTime, setInitialTime] = useState<string>('09:00');
   const [initialType, setInitialType] = useState<ItemType>('class');
 
+  // Navigation handlers
+  const handleNavigate = (direction: 'prev' | 'next' | 'today') => {
+    if (direction === 'today') {
+      setCurrentDate(new Date());
+    } else if (view === 'week') {
+      setCurrentDate(direction === 'next' ? addWeeks(currentDate, 1) : subWeeks(currentDate, 1));
+    } else if (view === 'day') {
+      setCurrentDate(direction === 'next' ? addDays(currentDate, 1) : addDays(currentDate, -1));
+    }
+  };
+
   // Handle slot click (when user clicks empty calendar slot)
-  const handleSlotClick = (dayOfWeek: number, hour: number) => {
+  const handleSlotClick = (dayOfWeek: number | undefined, hour: number) => {
     setInitialDayOfWeek(dayOfWeek);
     setInitialTime(`${hour.toString().padStart(2, '0')}:00`);
     setInitialType('class'); // Default to class
     setIsAddDialogOpen(true);
+  };
+
+  // Handle day view slot click
+  const handleDaySlotClick = (hour: number) => {
+    handleSlotClick(currentDate.getDay(), hour);
   };
 
   // Handle event click (when user clicks existing event)
@@ -135,12 +161,12 @@ export default function UnifiedSchedulePage() {
 
   return (
     <div className="space-y-4 sm:space-y-6 pb-20 sm:pb-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">My Schedule</h1>
-          <p className="text-sm sm:text-base text-gray-600 mt-1">
-            View classes, team events, availability, and blockers in one place
+          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">Schedule</h1>
+          <p className="text-base sm:text-lg text-gray-600 mt-2">
+            Your classes, availability, and commitments at a glance
           </p>
         </div>
 
@@ -152,7 +178,7 @@ export default function UnifiedSchedulePage() {
             setIsAddDialogOpen(true);
           }}
           style={{ backgroundColor: BRAND_COLORS.PRIMARY }}
-          className="text-white hover:opacity-90 shadow-md w-full sm:w-auto"
+          className="text-white hover:opacity-90 shadow-md w-full sm:w-auto hidden sm:flex"
           size="lg"
         >
           <Plus className="h-5 w-5 mr-2" />
@@ -160,82 +186,136 @@ export default function UnifiedSchedulePage() {
         </Button>
       </div>
 
-      {/* Filter Tabs */}
-      <div className="flex flex-wrap gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
-        <button
-          onClick={() => setFilter('all')}
-          className={cn(
-            'px-4 py-2 rounded-md text-sm font-medium transition-colors',
-            filter === 'all'
-              ? 'text-white shadow-sm'
-              : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
-          )}
-          style={filter === 'all' ? { backgroundColor: BRAND_COLORS.PRIMARY } : undefined}
-        >
-          <Calendar className="h-4 w-4 inline mr-1.5" />
-          All
-        </button>
-        <button
-          onClick={() => setFilter('class')}
-          className={cn(
-            'px-4 py-2 rounded-md text-sm font-medium transition-colors',
-            filter === 'class'
-              ? 'text-white shadow-sm'
-              : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
-          )}
-          style={filter === 'class' ? { backgroundColor: BRAND_COLORS.PRIMARY } : undefined}
-        >
-          Classes
-        </button>
-        <button
-          onClick={() => setFilter('event')}
-          className={cn(
-            'px-4 py-2 rounded-md text-sm font-medium transition-colors',
-            filter === 'event'
-              ? 'bg-blue-600 text-white shadow-sm'
-              : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
-          )}
-        >
-          Team Events
-        </button>
-        <button
-          onClick={() => setFilter('availability')}
-          className={cn(
-            'px-4 py-2 rounded-md text-sm font-medium transition-colors',
-            filter === 'availability'
-              ? 'bg-green-600 text-white shadow-sm'
-              : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
-          )}
-        >
-          Available
-        </button>
-        <button
-          onClick={() => setFilter('blocker')}
-          className={cn(
-            'px-4 py-2 rounded-md text-sm font-medium transition-colors',
-            filter === 'blocker'
-              ? 'bg-orange-600 text-white shadow-sm'
-              : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
-          )}
-        >
-          Blockers
-        </button>
-        <div className="ml-auto text-sm text-gray-600 flex items-center gap-1.5">
-          <Filter className="h-4 w-4" />
-          <span className="hidden sm:inline">Filter:</span>
-          <span className="font-medium capitalize">{filter === 'event' ? 'Team Events' : filter}</span>
+      {/* Calendar Navigation Header */}
+      <CalendarHeader
+        currentDate={currentDate}
+        view={view}
+        onViewChange={setView}
+        onNavigate={handleNavigate}
+      />
+
+      {/* Filter Pills & Legend */}
+      <div className="flex flex-col gap-3">
+        {/* Filter Pills */}
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => setFilter('all')}
+            className={cn(
+              'px-4 py-2 rounded-full text-sm font-medium transition-all',
+              filter === 'all'
+                ? 'text-white shadow-md'
+                : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
+            )}
+            style={filter === 'all' ? { backgroundColor: BRAND_COLORS.PRIMARY } : undefined}
+          >
+            All Items
+          </button>
+          <button
+            onClick={() => setFilter('class')}
+            className={cn(
+              'px-4 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-1.5',
+              filter === 'class'
+                ? 'text-white shadow-md'
+                : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
+            )}
+            style={filter === 'class' ? { backgroundColor: BRAND_COLORS.PRIMARY } : undefined}
+          >
+            <GraduationCap className="h-4 w-4" />
+            Classes
+          </button>
+          <button
+            onClick={() => setFilter('availability')}
+            className={cn(
+              'px-4 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-1.5',
+              filter === 'availability'
+                ? 'bg-green-600 text-white shadow-md'
+                : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
+            )}
+          >
+            <Clock className="h-4 w-4" />
+            Available
+          </button>
+          <button
+            onClick={() => setFilter('blocker')}
+            className={cn(
+              'px-4 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-1.5',
+              filter === 'blocker'
+                ? 'bg-orange-600 text-white shadow-md'
+                : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
+            )}
+          >
+            <Ban className="h-4 w-4" />
+            Blockers
+          </button>
+          <button
+            onClick={() => setFilter('event')}
+            className={cn(
+              'px-4 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-1.5',
+              filter === 'event'
+                ? 'bg-blue-600 text-white shadow-md'
+                : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
+            )}
+          >
+            <CalendarIcon className="h-4 w-4" />
+            Events
+          </button>
+        </div>
+
+        {/* Compact Legend */}
+        <div className="flex flex-wrap gap-3 text-xs text-gray-600 px-2">
+          <div className="flex items-center gap-1.5">
+            <div className="w-3 h-3 rounded" style={{ backgroundColor: BRAND_COLORS.PRIMARY }} />
+            <span>Class</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-3 h-3 rounded bg-green-600" />
+            <span>Available</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-3 h-3 rounded bg-orange-600" />
+            <span>Blocker</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-3 h-3 rounded bg-blue-600" />
+            <span>Event</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <AlertCircle className="h-3.5 w-3.5 text-yellow-600" />
+            <span>Conflict</span>
+          </div>
         </div>
       </div>
 
-      {/* Calendar */}
-      <div className="h-[calc(100vh-320px)] min-h-[600px]">
-        <WeekView
-          events={calendarEvents}
-          selectedDate={new Date()}
-          onSlotClick={handleSlotClick}
-          onEventClick={handleEventClick}
-          showLegend={true}
-        />
+      {/* Calendar Views */}
+      <div className="h-[calc(100vh-400px)] sm:h-[calc(100vh-380px)] min-h-[500px]">
+        {view === 'week' && (
+          <WeekView
+            events={calendarEvents}
+            selectedDate={currentDate}
+            onSlotClick={handleSlotClick}
+            onEventClick={handleEventClick}
+          />
+        )}
+        {view === 'day' && (
+          <DayView
+            date={currentDate}
+            events={calendarEvents.filter(event => {
+              // Filter to show only events for the current day
+              if (!event.date) {
+                return event.dayOfWeek === currentDate.getDay();
+              }
+              const eventDate = new Date(event.date);
+              return eventDate.toDateString() === currentDate.toDateString();
+            })}
+            onSlotClick={handleDaySlotClick}
+            onEventClick={handleEventClick}
+          />
+        )}
+        {view === 'list' && (
+          <div className="h-full bg-white rounded-xl border border-gray-200 p-6 overflow-y-auto">
+            <p className="text-gray-500 text-center">List view coming soon...</p>
+          </div>
+        )}
       </div>
 
       {/* Floating Action Button (Mobile) */}
@@ -256,14 +336,15 @@ export default function UnifiedSchedulePage() {
         </Button>
       </div>
 
-      {/* Instructions */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h3 className="text-sm font-semibold text-blue-900 mb-2">Quick Tips</h3>
-        <ul className="text-sm text-blue-800 space-y-1">
-          <li>• Click any time slot to quickly add a class, availability, or blocker</li>
-          <li>• Select multiple days at once when adding classes (e.g., MWF)</li>
+      {/* Quick Tips */}
+      <div className="rounded-xl p-4 sm:p-5 bg-info-50 border border-info-200">
+        <h3 className="text-sm font-semibold mb-2 text-info-900">Quick Tips</h3>
+        <ul className="text-sm space-y-1.5 text-info-800">
+          <li>• Tap any time slot to add classes, availability, or blockers</li>
+          <li>• Switch between Week and Day views for different perspectives</li>
           <li>• Yellow warning icons indicate scheduling conflicts</li>
-          <li>• Use filters to focus on specific types of schedule items</li>
+          <li>• Use filter pills to focus on specific item types</li>
+          <li>• Red line shows current time in real-time</li>
         </ul>
       </div>
 

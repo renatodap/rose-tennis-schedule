@@ -11,7 +11,6 @@ import { useState } from 'react';
 import { Check, X, HelpCircle } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { useEventRsvp, RsvpResponse } from '@/lib/hooks/useEventRsvp';
-import { triggerQuickConfetti, triggerHaptic } from '@/lib/utils/confetti';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface MobileRsvpZonesProps {
@@ -35,17 +34,9 @@ export function MobileRsvpZones({
     // Optimistic update
     setOptimisticResponse(response);
 
-    // Haptic feedback
-    triggerHaptic('medium');
-
     // Show checkmark animation
     setShowCheckmark(true);
     setTimeout(() => setShowCheckmark(false), 1000);
-
-    // Confetti for going to mandatory events
-    if (response === 'going' && eventType === 'mandatory') {
-      triggerQuickConfetti();
-    }
 
     const success = await updateRsvp(eventId, response);
 
@@ -62,69 +53,75 @@ export function MobileRsvpZones({
   const isMaybe = optimisticResponse === 'maybe';
 
   return (
-    <div className="space-y-2 relative">
+    <div className="space-y-3 relative">
       {/* Giant Tap Zones */}
-      <div className="grid grid-rows-2 gap-2 min-h-[220px]">
+      <div className="grid grid-rows-2 gap-3 min-h-[240px]">
         {/* TOP HALF - GOING */}
-        <button
+        <motion.button
           onClick={() => handleRsvp('going')}
           disabled={updating}
+          whileTap={{ scale: 0.95 }}
           className={cn(
-            'bg-gradient-to-br rounded-xl transition-all duration-300',
+            'bg-gradient-to-br rounded-2xl transition-all duration-300',
             'flex flex-col items-center justify-center gap-2',
-            'active:scale-95 disabled:opacity-50',
-            'border-2 font-bold text-lg shadow-md',
+            'disabled:opacity-50',
+            'border-2 font-bold text-lg shadow-lg',
+            'min-h-[110px]',
             isGoing
-              ? 'from-green-500 to-green-600 border-green-700 text-white scale-105 shadow-lg'
-              : 'from-green-400/80 to-green-500/80 border-green-500/50 text-white hover:from-green-500 hover:to-green-600'
+              ? 'from-green-500 to-green-600 border-green-700 text-white scale-105 shadow-xl'
+              : 'from-green-400/90 to-green-500/90 border-green-500 text-white hover:from-green-500 hover:to-green-600'
           )}
         >
-          <Check className="h-10 w-10" />
-          <span>I'M GOING</span>
+          <Check className="h-12 w-12" strokeWidth={3} />
+          <span className="text-xl">I'M GOING</span>
           {isGoing && (
             <span className="text-xs opacity-90 font-normal">You're attending!</span>
           )}
-        </button>
+        </motion.button>
 
         {/* BOTTOM HALF - NOT GOING */}
-        <button
+        <motion.button
           onClick={() => handleRsvp('not_going')}
           disabled={updating}
+          whileTap={{ scale: 0.95 }}
           className={cn(
-            'bg-gradient-to-br rounded-xl transition-all duration-300',
+            'bg-gradient-to-br rounded-2xl transition-all duration-300',
             'flex flex-col items-center justify-center gap-2',
-            'active:scale-95 disabled:opacity-50',
-            'border-2 font-bold text-lg shadow-md',
+            'disabled:opacity-50',
+            'border-2 font-bold text-lg shadow-lg',
+            'min-h-[110px]',
             isNotGoing
-              ? 'from-red-500 to-red-600 border-red-700 text-white scale-105 shadow-lg'
-              : 'from-red-400/80 to-red-500/80 border-red-500/50 text-white hover:from-red-500 hover:to-red-600'
+              ? 'from-red-500 to-red-600 border-red-700 text-white scale-105 shadow-xl'
+              : 'from-red-400/90 to-red-500/90 border-red-500 text-white hover:from-red-500 hover:to-red-600'
           )}
         >
-          <X className="h-10 w-10" />
-          <span>CAN'T MAKE IT</span>
+          <X className="h-12 w-12" strokeWidth={3} />
+          <span className="text-xl">CAN'T MAKE IT</span>
           {isNotGoing && (
             <span className="text-xs opacity-90 font-normal">You're not attending</span>
           )}
-        </button>
+        </motion.button>
       </div>
 
       {/* MAYBE - Small button */}
-      <button
+      <motion.button
         onClick={() => handleRsvp('maybe')}
         disabled={updating}
+        whileTap={{ scale: 0.95 }}
         className={cn(
-          'w-full py-3 rounded-lg transition-all duration-300',
+          'w-full py-4 rounded-xl transition-all duration-300',
           'flex items-center justify-center gap-2',
-          'active:scale-95 disabled:opacity-50',
-          'border-2 text-sm font-medium shadow-sm',
+          'disabled:opacity-50',
+          'border-2 font-semibold shadow-md',
+          'min-h-[52px]',
           isMaybe
-            ? 'bg-yellow-500 border-yellow-600 text-white'
-            : 'bg-yellow-50 border-yellow-300 text-yellow-700 hover:bg-yellow-100'
+            ? 'bg-amber-500 border-amber-600 text-white shadow-lg'
+            : 'bg-amber-50 border-amber-400 text-amber-700 hover:bg-amber-100'
         )}
       >
-        <HelpCircle className="h-4 w-4" />
-        <span>{isMaybe ? 'You marked Maybe' : 'Maybe / Not Sure'}</span>
-      </button>
+        <HelpCircle className="h-5 w-5" />
+        <span className="text-base">{isMaybe ? 'You marked Maybe' : 'Maybe / Not Sure'}</span>
+      </motion.button>
 
       {/* Animated Checkmark Overlay */}
       <AnimatePresence>

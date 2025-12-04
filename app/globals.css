@@ -2,142 +2,499 @@
 @tailwind components;
 @tailwind utilities;
 
+/**
+ * $100M DESIGN SYSTEM - ROSE-HULMAN TENNIS
+ * World-class design tokens for athletic excellence
+ * Every value is intentional. Every interaction delightful.
+ */
+
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
+    /* ================================
+       COLOR TOKENS - LIGHT MODE
+       ================================ */
+
+    /* Modern Maroon Evolution - Rich, Deep, Saturated */
+    --maroon: 0 85% 30%;                    /* #991b1b - Rich base maroon */
+    --maroon-deep: 0 90% 25%;               /* #7f1d1d - Deep, intense */
+    --maroon-vivid: 0 72% 51%;              /* #dc2626 - Vibrant, energetic */
+    --maroon-muted: 0 50% 35%;              /* Sophisticated, subdued */
+
+    /* Maroon Gradient - Athletic energy flow */
+    --maroon-gradient-from: 0 85% 30%;      /* Rich maroon */
+    --maroon-gradient-to: 0 72% 45%;        /* Vibrant crimson */
+
+    /* Primary - Based on modern maroon */
+    --primary: 0 85% 30%;                   /* Rich maroon */
+    --primary-foreground: 0 0% 100%;        /* Pure white */
+    --primary-hover: 0 72% 51%;             /* Vivid on hover */
+    --primary-active: 0 90% 25%;            /* Deep on press */
+
+    /* Secondary - Cool neutral sophistication */
+    --secondary: 0 0% 96%;                  /* Light neutral */
+    --secondary-foreground: 0 0% 15%;       /* Dark text */
+    --secondary-hover: 0 0% 92%;            /* Hover state */
+
+    /* Accent - Tennis ball energy (vibrant green) */
+    --accent: 142 71% 45%;                  /* #16a34a - Tennis green */
+    --accent-foreground: 0 0% 100%;         /* White text */
+
+    /* Semantic Colors */
+    --success: 142 71% 45%;                 /* #16a34a - Going/Available */
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 92% 50%;                  /* #f59e0b - Maybe/Tentative */
+    --warning-foreground: 0 0% 100%;
+
+    --error: 0 84% 60%;                     /* #ef4444 - Not going/Error */
+    --error-foreground: 0 0% 100%;
+
+    --info: 217 91% 60%;                    /* #3b82f6 - Informational */
+    --info-foreground: 0 0% 100%;
+
+    /* Surface Colors - Layered depth */
+    --background: 0 0% 100%;                /* Pure white base */
+    --foreground: 0 0% 9%;                  /* Near-black text */
+
+    --card: 0 0% 100%;                      /* White cards */
+    --card-foreground: 0 0% 9%;
+    --card-hover: 0 0% 98%;                 /* Subtle hover */
+    --card-elevated: 0 0% 100%;             /* Elevated cards */
+
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
-    --primary: 0 100% 25%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
-    --accent: 0 0% 96.1%;
-    --accent-foreground: 0 0% 9%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 0 100% 25%;
-    --radius: 0.5rem;
+    --popover-foreground: 0 0% 9%;
+
+    --muted: 0 0% 96%;                      /* Muted background */
+    --muted-foreground: 0 0% 45%;           /* Muted text */
+
+    /* Interactive Elements */
+    --border: 0 0% 90%;                     /* Subtle borders */
+    --input: 0 0% 90%;                      /* Input borders */
+    --ring: 0 85% 30%;                      /* Focus ring - maroon */
+
+    /* Overlays */
+    --overlay: 0 0% 0% / 0.5;              /* Modal backdrop */
+    --overlay-dark: 0 0% 0% / 0.75;        /* Dark overlay */
+
+    /* ================================
+       SPACING & LAYOUT
+       ================================ */
+    --radius: 0.5rem;                       /* Default radius */
+    --content-max-width: 1400px;
+
+    /* ================================
+       TRANSITIONS
+       ================================ */
+    --duration-fast: 150ms;
+    --duration-normal: 200ms;
+    --duration-slow: 300ms;
+    --duration-emphasis: 500ms;
+
+    --ease-athletic: cubic-bezier(0.4, 0, 0.2, 1);
+    --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --ease-smooth: cubic-bezier(0.45, 0, 0.55, 1);
   }
 
   .dark {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 100% 25%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 0 0% 14.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 100% 25%;
-  }
-}
+    /* ================================
+       COLOR TOKENS - DARK MODE
+       ================================ */
 
-@layer base {
+    /* Modern Maroon Evolution - Enhanced for dark mode */
+    --maroon: 0 72% 51%;                    /* Brighter in dark mode */
+    --maroon-deep: 0 85% 30%;               /* Base maroon */
+    --maroon-vivid: 0 72% 60%;              /* More vibrant */
+    --maroon-muted: 0 40% 40%;              /* Muted dark */
+
+    --maroon-gradient-from: 0 72% 51%;
+    --maroon-gradient-to: 0 85% 40%;
+
+    /* Primary - Adjusted for dark backgrounds */
+    --primary: 0 72% 51%;                   /* Brighter maroon */
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 0 72% 60%;
+    --primary-active: 0 85% 40%;
+
+    /* Secondary - Dark mode surfaces */
+    --secondary: 0 0% 15%;                  /* Dark surface */
+    --secondary-foreground: 0 0% 98%;       /* Light text */
+    --secondary-hover: 0 0% 18%;
+
+    /* Accent - Enhanced visibility */
+    --accent: 142 71% 50%;
+    --accent-foreground: 0 0% 100%;
+
+    /* Semantic Colors - Dark mode optimized */
+    --success: 142 71% 50%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 92% 55%;
+    --warning-foreground: 0 0% 100%;
+
+    --error: 0 84% 65%;
+    --error-foreground: 0 0% 100%;
+
+    --info: 217 91% 65%;
+    --info-foreground: 0 0% 100%;
+
+    /* Surface Colors - Dark theme */
+    --background: 0 0% 7%;                  /* Deep dark */
+    --foreground: 0 0% 98%;                 /* Near-white text */
+
+    --card: 0 0% 10%;                       /* Elevated from background */
+    --card-foreground: 0 0% 98%;
+    --card-hover: 0 0% 12%;
+    --card-elevated: 0 0% 13%;
+
+    --popover: 0 0% 10%;
+    --popover-foreground: 0 0% 98%;
+
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 64%;
+
+    /* Interactive Elements - Dark theme */
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 0 72% 51%;
+
+    /* Overlays */
+    --overlay: 0 0% 0% / 0.7;
+    --overlay-dark: 0 0% 0% / 0.85;
+  }
+
+  /* ================================
+     BASE ELEMENT STYLES
+     ================================ */
+
   * {
     @apply border-border;
   }
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-minion), Georgia, serif;
+    font-weight: 400;
+    line-height: 1.6;
+    transition: background-color var(--duration-normal) var(--ease-smooth),
+                color var(--duration-normal) var(--ease-smooth);
   }
+
+  /* Typography Hierarchy */
   h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-futura), Arial, sans-serif;
+    font-family: var(--font-futura), system-ui, -apple-system, sans-serif;
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    color: hsl(var(--foreground));
+  }
+
+  h1 {
+    @apply text-h1;
+  }
+
+  h2 {
+    @apply text-h2;
+  }
+
+  h3 {
+    @apply text-h3;
+  }
+
+  h4 {
+    @apply text-h4;
+  }
+
+  h5 {
+    @apply text-h5;
+  }
+
+  h6 {
+    @apply text-h6;
+  }
+
+  p {
+    @apply text-body;
+    margin-bottom: 1rem;
+  }
+
+  /* Focus States - Accessible & Beautiful */
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+    border-radius: 0.25rem;
+  }
+
+  button:focus-visible,
+  a:focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+
+  /* Selection */
+  ::selection {
+    background-color: hsl(var(--primary) / 0.2);
+    color: hsl(var(--foreground));
+  }
+}
+
+@layer components {
+  /* ================================
+     PREMIUM SCROLLBAR
+     ================================ */
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--muted));
+    border-radius: var(--radius);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--maroon));
+    border-radius: var(--radius);
+    border: 2px solid hsl(var(--muted));
+    transition: background var(--duration-fast) var(--ease-athletic);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--maroon-vivid));
+  }
+
+  ::-webkit-scrollbar-thumb:active {
+    background: hsl(var(--maroon-deep));
+  }
+
+  /* Firefox scrollbar */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--maroon)) hsl(var(--muted));
+  }
+
+  /* ================================
+     GRADIENT UTILITIES
+     ================================ */
+
+  .gradient-maroon {
+    background: linear-gradient(
+      135deg,
+      hsl(var(--maroon-gradient-from)) 0%,
+      hsl(var(--maroon-gradient-to)) 100%
+    );
+  }
+
+  .gradient-maroon-radial {
+    background: radial-gradient(
+      circle at top left,
+      hsl(var(--maroon-gradient-from)) 0%,
+      hsl(var(--maroon-gradient-to)) 100%
+    );
+  }
+
+  .gradient-text-maroon {
+    background: linear-gradient(
+      135deg,
+      hsl(var(--maroon-gradient-from)) 0%,
+      hsl(var(--maroon-gradient-to)) 100%
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* ================================
+     INTERACTIVE BUTTON STATES
+     ================================ */
+
+  .btn-primary {
+    @apply bg-primary text-primary-foreground;
+    @apply shadow-md hover:shadow-maroon;
+    @apply transition-all duration-normal;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-primary:hover {
+    @apply shadow-maroon-lg;
+    transform: translateY(-1px);
+  }
+
+  .btn-primary:active {
+    @apply shadow-press;
+    transform: translateY(0);
+  }
+
+  /* ================================
+     CARD COMPONENTS
+     ================================ */
+
+  .card-interactive {
+    @apply bg-card border border-border rounded-lg;
+    @apply transition-all duration-normal ease-athletic;
+    @apply hover:shadow-hover hover:-translate-y-0.5;
+    @apply active:shadow-press active:translate-y-0;
+  }
+
+  .card-elevated {
+    @apply bg-card-elevated shadow-lg;
+    @apply border border-border/50 rounded-xl;
   }
 }
 
 @layer utilities {
+  /* ================================
+     TEXT UTILITIES
+     ================================ */
+
   .text-balance {
     text-wrap: balance;
   }
 
+  .text-pretty {
+    text-wrap: pretty;
+  }
+
+  /* ================================
+     SCROLLBAR UTILITIES
+     ================================ */
+
   .scrollbar-hide {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 
   .scrollbar-hide::-webkit-scrollbar {
-    display: none;  /* Chrome, Safari and Opera */
+    display: none;
+  }
+
+  /* ================================
+     GLASS MORPHISM
+     ================================ */
+
+  .glass {
+    background: hsl(var(--background) / 0.8);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid hsl(var(--border) / 0.5);
+  }
+
+  .glass-dark {
+    background: hsl(var(--background) / 0.6);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid hsl(var(--border) / 0.3);
+  }
+
+  /* ================================
+     ANIMATION UTILITIES
+     ================================ */
+
+  .animate-in {
+    animation-duration: var(--duration-normal);
+    animation-fill-mode: both;
+  }
+
+  .animate-out {
+    animation-duration: var(--duration-fast);
+    animation-fill-mode: both;
+  }
+
+  /* ================================
+     SAFE AREAS (Mobile)
+     ================================ */
+
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .safe-left {
+    padding-left: env(safe-area-inset-left);
+  }
+
+  .safe-right {
+    padding-right: env(safe-area-inset-right);
   }
 }
 
-/* Custom scrollbar for better UX */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
+/* ================================
+   CALENDAR SPECIFIC STYLES
+   (Preserved from original)
+   ================================ */
 
-::-webkit-scrollbar-track {
-  @apply bg-gray-100;
-}
-
-::-webkit-scrollbar-thumb {
-  @apply bg-rose-hulman-maroon rounded;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  @apply bg-rose-hulman-maroon-dark;
-}
-
-/* Smooth transitions */
-* {
-  @apply transition-colors duration-200;
-}
-
-/* Calendar specific styles */
 .calendar-grid {
   display: grid;
   grid-template-columns: 60px 1fr;
   gap: 1px;
-  background: #e5e7eb;
+  background: hsl(var(--border));
+  border-radius: var(--radius);
+  overflow: hidden;
 }
 
 .time-slot {
   min-height: 60px;
-  @apply bg-white cursor-pointer hover:bg-gray-50;
+  @apply bg-card cursor-pointer;
+  @apply transition-all duration-fast ease-athletic;
+  @apply hover:bg-card-hover;
+  position: relative;
+}
+
+.time-slot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: transparent;
+  transition: background var(--duration-fast) var(--ease-athletic);
+}
+
+.time-slot:hover::after {
+  background: hsl(var(--foreground) / 0.02);
 }
 
 .time-slot.blocked {
-  @apply bg-gray-200 cursor-not-allowed;
+  @apply bg-muted cursor-not-allowed opacity-60;
 }
 
 .time-slot.available {
-  @apply bg-green-50 border-2 border-green-500;
+  @apply bg-success/10 border-2 border-success;
+  box-shadow: inset 0 0 0 1px hsl(var(--success) / 0.1);
 }
 
 .time-slot.class-schedule {
   @apply bg-rose-hulman-maroon text-white;
+  background: linear-gradient(135deg, hsl(var(--maroon)) 0%, hsl(var(--maroon-deep)) 100%);
 }
 
 .time-slot.recurring-blocker {
-  @apply bg-orange-100 border-2 border-orange-500;
+  @apply bg-warning/10 border-2 border-warning;
 }
 
 .time-slot.one-time-blocker {
-  @apply bg-red-100 border-2 border-red-500;
+  @apply bg-error/10 border-2 border-error;
 }
 
 .time-slot.team-event {
-  @apply bg-blue-100 border-2 border-blue-500;
+  @apply bg-info/10 border-2 border-info;
 }
 
-/* Mobile optimizations */
+/* Mobile Optimizations */
 @media (max-width: 640px) {
   .calendar-grid {
     grid-template-columns: 50px 1fr;
@@ -148,9 +505,37 @@
   }
 }
 
-/* Touch feedback */
+/* Touch Feedback - Athletic responsiveness */
 @media (hover: none) {
   .time-slot:active {
-    @apply opacity-75;
+    transform: scale(0.98);
+    transition: transform var(--duration-fast) var(--ease-spring);
+  }
+
+  .btn-primary:active {
+    transform: scale(0.97);
+  }
+}
+
+/* Scrollbar Hiding Utilities */
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Reduced Motion Support - Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

@@ -46,19 +46,30 @@ export function EventDetailsDialog({
     }
   }, [open, isAdmin, event.id, getRsvpSummary]);
 
-  const eventTypeColors = {
-    mandatory: 'bg-red-100 text-red-800 border-red-300',
-    recommended: 'bg-orange-100 text-orange-800 border-orange-300',
-    optional: 'bg-green-100 text-green-800 border-green-300',
-    match: 'bg-blue-100 text-blue-800 border-blue-300',
+  const eventTypeConfig = {
+    mandatory: {
+      badgeVariant: 'danger' as const,
+      badgeStyle: 'solid' as const,
+      label: 'Mandatory',
+    },
+    recommended: {
+      badgeVariant: 'warning' as const,
+      badgeStyle: 'solid' as const,
+      label: 'Recommended',
+    },
+    optional: {
+      badgeVariant: 'info' as const,
+      badgeStyle: 'soft' as const,
+      label: 'Optional',
+    },
+    match: {
+      badgeVariant: 'primary' as const,
+      badgeStyle: 'solid' as const,
+      label: 'Match',
+    },
   };
 
-  const eventTypeLabels = {
-    mandatory: 'Mandatory',
-    recommended: 'Recommended',
-    optional: 'Optional',
-    match: 'Match',
-  };
+  const typeConfig = eventTypeConfig[event.event_type];
 
   const startDate = new Date(event.start_datetime);
   const endDate = new Date(event.end_datetime);
@@ -69,15 +80,16 @@ export function EventDetailsDialog({
         <DialogHeader>
           <div className="flex items-start gap-3">
             <div className="flex-1">
-              <DialogTitle className="text-2xl">{event.title}</DialogTitle>
-              <div className="flex items-center gap-2 mt-2">
+              <div className="flex items-center gap-2 mb-3">
                 <Badge
-                  variant="outline"
-                  className={cn('text-xs', eventTypeColors[event.event_type])}
+                  variant={typeConfig.badgeVariant}
+                  badgeStyle={typeConfig.badgeStyle}
+                  size="default"
                 >
-                  {eventTypeLabels[event.event_type]}
+                  {typeConfig.label}
                 </Badge>
               </div>
+              <DialogTitle className="text-2xl font-bold">{event.title}</DialogTitle>
             </div>
           </div>
         </DialogHeader>
@@ -171,6 +183,7 @@ export function EventDetailsDialog({
                       getRsvpSummary(event.id).then(setRsvpSummary);
                     }
                   }}
+                  fullWidth
                 />
               </div>
             </>

@@ -174,56 +174,62 @@ export function CompleteProfileDialog({ isOpen, userId, email, onComplete }: Com
     <Dialog open={isOpen} onOpenChange={() => {}}>
       <DialogContent className="sm:max-w-md" onInteractOutside={(e) => e.preventDefault()}>
         <DialogHeader>
-          <DialogTitle>Complete Your Profile</DialogTitle>
-          <DialogDescription>
-            Please provide a few more details to finish setting up your account.
+          <DialogTitle className="text-2xl">Welcome to Rose-Hulman Tennis!</DialogTitle>
+          <DialogDescription className="text-base">
+            Let&apos;s complete your profile to get you started. This will only take a moment.
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           {/* Email (read-only) */}
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email" className="text-neutral-700 font-medium">Email</Label>
             <Input
               id="email"
               type="email"
               value={email}
               disabled
-              className="bg-gray-50"
+              className="bg-neutral-50 h-11"
             />
           </div>
 
           {/* First and Last Name */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="firstName">First Name *</Label>
+              <Label htmlFor="firstName" className="text-neutral-700 font-medium">
+                First Name *
+              </Label>
               <Input
                 id="firstName"
                 type="text"
                 placeholder="John"
                 disabled={isLoading}
                 aria-invalid={errors.firstName ? 'true' : 'false'}
+                className="h-11"
                 {...register('firstName')}
               />
               {errors.firstName && (
-                <p className="text-sm text-red-600" role="alert">
+                <p className="text-sm text-red-600 font-medium" role="alert">
                   {errors.firstName.message}
                 </p>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="lastName">Last Name *</Label>
+              <Label htmlFor="lastName" className="text-neutral-700 font-medium">
+                Last Name *
+              </Label>
               <Input
                 id="lastName"
                 type="text"
                 placeholder="Doe"
                 disabled={isLoading}
                 aria-invalid={errors.lastName ? 'true' : 'false'}
+                className="h-11"
                 {...register('lastName')}
               />
               {errors.lastName && (
-                <p className="text-sm text-red-600" role="alert">
+                <p className="text-sm text-red-600 font-medium" role="alert">
                   {errors.lastName.message}
                 </p>
               )}
@@ -231,35 +237,36 @@ export function CompleteProfileDialog({ isOpen, userId, email, onComplete }: Com
           </div>
 
           {/* Role selection */}
-          <div className="space-y-2">
-            <Label>Role *</Label>
+          <div className="space-y-3">
+            <Label className="text-neutral-700 font-medium">Your Role *</Label>
             <RadioGroup
               value={selectedRole || ''}
               onValueChange={(value) => setValue('role', value as UserRole)}
               disabled={isLoading}
               aria-invalid={errors.role ? 'true' : 'false'}
+              className="space-y-2"
             >
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-3 border-2 border-neutral-200 rounded-lg p-3 hover:border-maroon-700 transition-colors cursor-pointer has-[:checked]:border-maroon-700 has-[:checked]:bg-maroon-50">
                 <RadioGroupItem value={UserRole.PLAYER} id="player" />
-                <Label htmlFor="player" className="font-normal cursor-pointer">
+                <Label htmlFor="player" className="font-medium cursor-pointer flex-1">
                   Player
                 </Label>
               </div>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-3 border-2 border-neutral-200 rounded-lg p-3 hover:border-maroon-700 transition-colors cursor-pointer has-[:checked]:border-maroon-700 has-[:checked]:bg-maroon-50">
                 <RadioGroupItem value={UserRole.CAPTAIN} id="captain" />
-                <Label htmlFor="captain" className="font-normal cursor-pointer">
+                <Label htmlFor="captain" className="font-medium cursor-pointer flex-1">
                   Captain
                 </Label>
               </div>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-3 border-2 border-neutral-200 rounded-lg p-3 hover:border-maroon-700 transition-colors cursor-pointer has-[:checked]:border-maroon-700 has-[:checked]:bg-maroon-50">
                 <RadioGroupItem value={UserRole.COACH} id="coach" />
-                <Label htmlFor="coach" className="font-normal cursor-pointer">
+                <Label htmlFor="coach" className="font-medium cursor-pointer flex-1">
                   Coach
                 </Label>
               </div>
             </RadioGroup>
             {errors.role && (
-              <p className="text-sm text-red-600" role="alert">
+              <p className="text-sm text-red-600 font-medium" role="alert">
                 {errors.role.message}
               </p>
             )}
@@ -267,28 +274,28 @@ export function CompleteProfileDialog({ isOpen, userId, email, onComplete }: Com
 
           {/* Team selection (for players and captains only) */}
           {selectedRole && selectedRole !== UserRole.COACH && (
-            <div className="space-y-2">
-              <Label>Team(s) *</Label>
-              <p className="text-xs text-gray-500 mb-2">
-                Select the team(s) you belong to
+            <div className="space-y-3">
+              <Label className="text-neutral-700 font-medium">Select Team(s) *</Label>
+              <p className="text-sm text-neutral-600">
+                Choose which team(s) you belong to
               </p>
-              <div className="space-y-2">
+              <div className="space-y-2 max-h-40 overflow-y-auto border border-neutral-200 rounded-lg p-3">
                 {teams.map((team) => (
-                  <div key={team.id} className="flex items-center space-x-2">
+                  <div key={team.id} className="flex items-center space-x-3 p-2 hover:bg-neutral-50 rounded transition-colors">
                     <Checkbox
                       id={team.id}
                       checked={selectedTeamIds.includes(team.id)}
                       onCheckedChange={() => toggleTeam(team.id)}
                       disabled={isLoading}
                     />
-                    <Label htmlFor={team.id} className="font-normal cursor-pointer">
+                    <Label htmlFor={team.id} className="font-medium cursor-pointer flex-1">
                       {team.name}
                     </Label>
                   </div>
                 ))}
               </div>
               {selectedTeamIds.length === 0 && selectedRole && (
-                <p className="text-sm text-red-600">
+                <p className="text-sm text-red-600 font-medium">
                   Please select at least one team
                 </p>
               )}
@@ -297,8 +304,8 @@ export function CompleteProfileDialog({ isOpen, userId, email, onComplete }: Com
 
           {/* Note for coaches */}
           {selectedRole === UserRole.COACH && (
-            <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
-              <p className="text-sm text-blue-800">
+            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm text-blue-900">
                 As a coach, your team assignments will be managed by the head coach after your profile is created.
               </p>
             </div>
@@ -306,25 +313,34 @@ export function CompleteProfileDialog({ isOpen, userId, email, onComplete }: Com
 
           {/* Phone number */}
           <div className="space-y-2">
-            <Label htmlFor="phone">Phone Number</Label>
+            <Label htmlFor="phone" className="text-neutral-700 font-medium">
+              Phone Number <span className="text-neutral-500 font-normal">(Optional)</span>
+            </Label>
             <Input
               id="phone"
               type="tel"
               placeholder="(123) 456-7890"
               disabled={isLoading}
+              className="h-11"
               {...register('phone')}
             />
-            <p className="text-xs text-gray-500">Optional - for team communication</p>
+            <p className="text-xs text-neutral-500">For team communication and notifications</p>
           </div>
 
           {/* Submit button */}
           <Button
             type="submit"
-            className="w-full"
+            className="w-full h-11 bg-maroon-700 hover:bg-maroon-800 text-white font-semibold shadow-sm hover:shadow-md transition-all mt-6"
             disabled={isLoading}
-            style={{ backgroundColor: '#800000' }}
           >
-            {isLoading ? 'Completing profile...' : 'Complete Profile'}
+            {isLoading ? (
+              <span className="flex items-center justify-center gap-2">
+                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                Completing profile...
+              </span>
+            ) : (
+              'Complete Profile'
+            )}
           </Button>
         </form>
       </DialogContent>

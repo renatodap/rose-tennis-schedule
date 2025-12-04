@@ -1,9 +1,9 @@
 /**
  * Authentication layout component
- * Provides centered layout with Rose-Hulman branding for auth pages
+ * Premium auth experience with gradient background and centered card
  */
 
-import { BRAND_COLORS } from '@/lib/constants';
+import { colors, gradients } from '@/lib/design-tokens';
 
 export default function AuthLayout({
   children,
@@ -11,38 +11,48 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100">
-      {/* Header with Rose-Hulman branding */}
-      <header className="w-full py-6 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md mx-auto">
-          <div className="text-center">
-            <h1
-              className="text-3xl font-bold tracking-tight"
-              style={{ color: BRAND_COLORS.PRIMARY }}
-            >
-              Rose-Hulman Tennis
-            </h1>
-            <p className="mt-2 text-sm text-gray-600">
-              Team Availability Management
-            </p>
-          </div>
+    <div
+      className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6"
+      style={{ background: gradients.maroon }}
+    >
+      {/* Logo and branding */}
+      <div className="w-full max-w-md mb-8 text-center">
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white/10 backdrop-blur-sm mb-4 shadow-lg">
+          <svg
+            className="w-10 h-10 text-white"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M13 10V3L4 14h7v7l9-11h-7z"
+            />
+          </svg>
         </div>
-      </header>
+        <h1 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">
+          Rose-Hulman Tennis
+        </h1>
+        <p className="mt-2 text-sm sm:text-base text-white/80">
+          Team Management Platform
+        </p>
+      </div>
 
-      {/* Main content area */}
-      <main className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-12">
-        <div className="w-full max-w-md">
-          <div className="bg-white rounded-lg shadow-lg p-8">
-            {children}
-          </div>
+      {/* Main content card */}
+      <main className="w-full max-w-md">
+        <div className="bg-white rounded-2xl shadow-2xl p-6 sm:p-8">
+          {children}
         </div>
       </main>
 
       {/* Footer */}
-      <footer className="w-full py-6 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md mx-auto text-center text-sm text-gray-500">
-          <p>&copy; {new Date().getFullYear()} Rose-Hulman Institute of Technology</p>
-        </div>
+      <footer className="mt-8 text-center">
+        <p className="text-sm text-white/70">
+          &copy; {new Date().getFullYear()} Rose-Hulman Institute of Technology
+        </p>
       </footer>
     </div>
   );

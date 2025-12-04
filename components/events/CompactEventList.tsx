@@ -11,13 +11,12 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar, MapPin, Clock, ChevronDown, ChevronUp, Car } from 'lucide-react';
+import { Calendar, MapPin, Clock, ChevronDown, ChevronUp } from 'lucide-react';
 import { format, isToday, isTomorrow, isThisWeek } from 'date-fns';
 import { EventWithRsvp } from '@/lib/hooks/useEvents';
 import { AttendeeAvatars } from './AttendeeAvatars';
 import { MobileRsvpZones } from './MobileRsvpZones';
 import { RsvpButtons } from './RsvpButtons';
-import { EventRideShares } from './EventRideShares';
 import { cn } from '@/lib/utils/cn';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -49,11 +48,31 @@ export function CompactEventList({ events, onRsvpChange }: CompactEventListProps
     return format(date, 'MMM d');
   };
 
-  const eventTypeColors = {
-    mandatory: 'bg-red-100 text-red-800 border-red-300',
-    recommended: 'bg-orange-100 text-orange-800 border-orange-300',
-    optional: 'bg-green-100 text-green-800 border-green-300',
-    match: 'bg-blue-100 text-blue-800 border-blue-300',
+  const eventTypeConfig = {
+    mandatory: {
+      badgeVariant: 'danger' as const,
+      badgeStyle: 'solid' as const,
+      label: 'Mandatory',
+      borderColor: 'border-l-4 border-l-red-600',
+    },
+    recommended: {
+      badgeVariant: 'warning' as const,
+      badgeStyle: 'solid' as const,
+      label: 'Recommended',
+      borderColor: 'border-l-4 border-l-amber-600',
+    },
+    optional: {
+      badgeVariant: 'info' as const,
+      badgeStyle: 'soft' as const,
+      label: 'Optional',
+      borderColor: 'border-l-4 border-l-blue-600',
+    },
+    match: {
+      badgeVariant: 'primary' as const,
+      badgeStyle: 'solid' as const,
+      label: 'Match',
+      borderColor: 'border-l-4 border-l-maroon-700',
+    },
   };
 
   const getRsvpBadgeColor = (response?: string) => {
@@ -76,43 +95,64 @@ export function CompactEventList({ events, onRsvpChange }: CompactEventListProps
         const endDate = new Date(event.end_datetime);
         const hasRsvp = event.user_rsvp && event.user_rsvp.response !== 'no_response';
 
+        const typeConfig = eventTypeConfig[event.event_type];
+
         return (
           <Card
             key={event.id}
+            variant="interactive"
             className={cn(
-              'overflow-hidden transition-all duration-300',
-              event.event_type === 'mandatory' && 'border-red-500 border-2',
-              hasRsvp && getRsvpBadgeColor(event.user_rsvp?.response).includes('bg-green') && 'bg-green-50/30',
-              hasRsvp && getRsvpBadgeColor(event.user_rsvp?.response).includes('bg-yellow') && 'bg-yellow-50/30',
-              hasRsvp && getRsvpBadgeColor(event.user_rsvp?.response).includes('bg-red') && 'bg-red-50/30'
+              'overflow-hidden transition-all duration-200',
+              typeConfig.borderColor,
+              hasRsvp && event.user_rsvp?.response === 'going' && 'bg-green-50/30',
+              hasRsvp && event.user_rsvp?.response === 'maybe' && 'bg-amber-50/20',
+              hasRsvp && event.user_rsvp?.response === 'not_going' && 'bg-red-50/20'
             )}
           >
             {/* Collapsed Preview */}
             <button
               onClick={() => toggleExpand(event.id)}
-              className="w-full p-4 text-left hover:bg-gray-50/50 transition-colors"
+              className="w-full p-4 text-left hover:bg-neutral-50/50 transition-colors active:bg-neutral-100/50"
             >
               <div className="flex items-center justify-between gap-3">
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-semibold text-gray-900 truncate">
-                      {event.title}
-                    </span>
+                  <div className="flex items-center gap-2 flex-wrap mb-1">
                     <Badge
-                      variant="outline"
-                      className={cn('text-xs shrink-0', eventTypeColors[event.event_type])}
+                      variant={typeConfig.badgeVariant}
+                      badgeStyle={typeConfig.badgeStyle}
+                      size="xs"
                     >
-                      {event.event_type}
+                      {typeConfig.label}
                     </Badge>
+                    {hasRsvp && (
+                      <Badge
+                        variant={
+                          event.user_rsvp?.response === 'going'
+                            ? 'success'
+                            : event.user_rsvp?.response === 'maybe'
+                            ? 'warning'
+                            : 'danger'
+                        }
+                        badgeStyle="dot"
+                        size="xs"
+                      >
+                        {event.user_rsvp?.response === 'going' && "You're Going"}
+                        {event.user_rsvp?.response === 'maybe' && "You're Maybe"}
+                        {event.user_rsvp?.response === 'not_going' && "Can't Attend"}
+                      </Badge>
+                    )}
                   </div>
-                  <div className="flex items-center gap-3 mt-1 text-sm text-gray-600">
+                  <span className="font-bold text-neutral-900 truncate block">
+                    {event.title}
+                  </span>
+                  <div className="flex items-center gap-3 mt-1.5 text-sm text-neutral-600">
                     <span className="font-medium">{getRelativeTime(event.start_datetime)}</span>
-                    <span>•</span>
+                    <span className="text-neutral-400">•</span>
                     <span>{format(startDate, 'h:mm a')}</span>
                     {event.attendee_count !== undefined && event.attendee_count > 0 && (
                       <>
-                        <span>•</span>
-                        <span className="text-green-600 font-medium">
+                        <span className="text-neutral-400">•</span>
+                        <span className="text-green-600 font-semibold">
                           {event.attendee_count} going
                         </span>
                       </>
@@ -121,9 +161,9 @@ export function CompactEventList({ events, onRsvpChange }: CompactEventListProps
                 </div>
                 <div className="shrink-0">
                   {isExpanded ? (
-                    <ChevronUp className="h-5 w-5 text-gray-400" />
+                    <ChevronUp className="h-5 w-5 text-neutral-400" />
                   ) : (
-                    <ChevronDown className="h-5 w-5 text-gray-400" />
+                    <ChevronDown className="h-5 w-5 text-neutral-400" />
                   )}
                 </div>
               </div>
@@ -139,48 +179,43 @@ export function CompactEventList({ events, onRsvpChange }: CompactEventListProps
                   transition={{ duration: 0.3 }}
                   className="overflow-hidden"
                 >
-                  <CardContent className="border-t pt-4 space-y-4">
+                  <CardContent className="border-t border-neutral-200 pt-4 space-y-4">
                     {/* Event Details */}
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-sm text-gray-700">
-                        <Calendar className="h-4 w-4 shrink-0" />
-                        <span>{format(startDate, 'EEEE, MMMM d, yyyy')}</span>
+                    <div className="space-y-2.5">
+                      <div className="flex items-center gap-2 text-sm text-neutral-700">
+                        <Calendar className="h-4 w-4 shrink-0 text-neutral-500" />
+                        <span className="font-medium">{format(startDate, 'EEEE, MMMM d, yyyy')}</span>
                       </div>
 
-                      <div className="flex items-center gap-2 text-sm text-gray-700">
-                        <Clock className="h-4 w-4 shrink-0" />
-                        <span>
+                      <div className="flex items-center gap-2 text-sm text-neutral-700">
+                        <Clock className="h-4 w-4 shrink-0 text-neutral-500" />
+                        <span className="font-medium">
                           {format(startDate, 'h:mm a')} - {format(endDate, 'h:mm a')}
                         </span>
                       </div>
 
                       {event.location && (
-                        <div className="flex items-center gap-2 text-sm text-gray-700">
-                          <MapPin className="h-4 w-4 shrink-0" />
-                          <span>{event.location}</span>
+                        <div className="flex items-center gap-2 text-sm text-neutral-700">
+                          <MapPin className="h-4 w-4 shrink-0 text-neutral-500" />
+                          <span className="font-medium">{event.location}</span>
                         </div>
                       )}
                     </div>
 
                     {/* Description */}
                     {event.description && (
-                      <p className="text-sm text-gray-600 leading-relaxed">
+                      <p className="text-sm text-neutral-600 leading-relaxed bg-neutral-50 p-3 rounded-md">
                         {event.description}
                       </p>
                     )}
 
                     {/* Attendees */}
                     {event.attendees && event.attendees.length > 0 && (
-                      <AttendeeAvatars attendees={event.attendees} maxVisible={6} />
+                      <AttendeeAvatars attendees={event.attendees} maxVisible={6} size="md" />
                     )}
 
-                    {/* Ride Shares */}
-                    <div className="pt-3 border-t">
-                      <EventRideShares event={event} />
-                    </div>
-
                     {/* RSVP Buttons */}
-                    <div className="pt-2 border-t">
+                    <div className="pt-2 border-t border-neutral-200">
                       {isMobile ? (
                         <MobileRsvpZones
                           eventId={event.id}
@@ -193,6 +228,7 @@ export function CompactEventList({ events, onRsvpChange }: CompactEventListProps
                           eventId={event.id}
                           currentResponse={event.user_rsvp?.response}
                           onResponseChange={onRsvpChange}
+                          fullWidth
                         />
                       )}
                     </div>

@@ -2,32 +2,48 @@
 
 /**
  * Profile page
- * Displays user profile information (read-only for now)
+ * Premium, personalized profile experience
  */
 
 import { useUser } from '@/lib/hooks/useUser';
-import { useBadges } from '@/lib/hooks/useBadges';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { BadgeGrid } from '@/components/badges/BadgeGrid';
-import { BRAND_COLORS, UserRole, Gender } from '@/lib/constants';
-import { User, Mail, Smartphone, Shield, Users, Trophy } from 'lucide-react';
+import { UserRole, Gender } from '@/lib/constants';
+import { User, Mail, Smartphone, Shield, Users, Calendar, Edit2, LogOut } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { getClient } from '@/lib/supabase/client';
+import { useToast } from '@/lib/hooks/use-toast';
+import { gradients } from '@/lib/design-tokens';
 
 export default function ProfilePage() {
   const { profile } = useUser();
-  const { userBadges, badgesByCategory, rarestBadge, loading: badgesLoading } = useBadges();
+  const router = useRouter();
+  const { toast } = useToast();
+  const supabase = getClient();
+
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      toast({
+        title: 'Signed out successfully',
+        description: 'See you next time!',
+      });
+      router.push('/sign-in');
+    } catch (error) {
+      toast({
+        title: 'Error signing out',
+        description: 'Please try again.',
+        variant: 'destructive',
+      });
+    }
+  };
 
   if (!profile) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div
-          className="w-8 h-8 border-4 border-t-transparent rounded-full animate-spin"
-          style={{ borderColor: `${BRAND_COLORS.PRIMARY} transparent ${BRAND_COLORS.PRIMARY} ${BRAND_COLORS.PRIMARY}` }}
-          aria-label="Loading"
-        />
+        <div className="w-8 h-8 border-4 border-maroon-700 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -56,185 +72,116 @@ export default function ProfilePage() {
 
 
   return (
-    <div className="space-y-6 max-w-4xl">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight text-gray-900">
-          My Profile
-        </h1>
-        <p className="mt-2 text-gray-600">
-          View and manage your account information
-        </p>
-      </div>
+    <div className="space-y-8 max-w-4xl pb-12">
+      {/* Hero Section */}
+      <div
+        className="relative rounded-2xl p-8 sm:p-10 overflow-hidden"
+        style={{ background: gradients.maroon }}
+      >
+        <div className="relative z-10 flex flex-col sm:flex-row items-center sm:items-start gap-6">
+          <Avatar size="2xl" ring="default" className="shadow-xl">
+            <AvatarFallback className="text-3xl font-bold bg-white text-maroon-700">
+              {getInitials()}
+            </AvatarFallback>
+          </Avatar>
 
-      {/* Profile header card */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
-            <Avatar className="h-24 w-24">
-              <AvatarFallback
-                className="text-2xl"
-                style={{ backgroundColor: `${BRAND_COLORS.PRIMARY}20`, color: BRAND_COLORS.PRIMARY }}
-              >
-                {getInitials()}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1 text-center sm:text-left">
-              <h2 className="text-2xl font-bold text-gray-900">
-                {profile.first_name} {profile.last_name}
-              </h2>
-              <p className="text-gray-600 mt-1">{profile.email}</p>
-              <div className="flex flex-wrap gap-2 mt-4 justify-center sm:justify-start">
-                <span
-                  className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium"
-                  style={{ backgroundColor: `${BRAND_COLORS.PRIMARY}20`, color: BRAND_COLORS.PRIMARY }}
-                >
-                  {getRoleLabel(profile.role)}
-                </span>
-                {profile.gender && (
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
-                    {getGenderLabel(profile.gender)}
-                  </span>
-                )}
-              </div>
+          <div className="flex-1 text-center sm:text-left">
+            <h1 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">
+              {profile.first_name} {profile.last_name}
+            </h1>
+            <p className="text-white/80 mt-2 text-sm sm:text-base">{profile.email}</p>
+
+            <div className="flex flex-wrap gap-2 mt-4 justify-center sm:justify-start">
+              <Badge variant="primary" badgeStyle="solid" size="default">
+                {getRoleLabel(profile.role)}
+              </Badge>
+              {profile.gender && (
+                <Badge variant="default" badgeStyle="soft" size="default" className="bg-white/20 text-white border-white/30 hover:bg-white/30">
+                  {getGenderLabel(profile.gender)}
+                </Badge>
+              )}
             </div>
           </div>
-        </CardContent>
-      </Card>
 
-      {/* Achievement Badges */}
-      <Card>
+          <Button
+            variant="outline"
+            size="default"
+            className="bg-white/10 border-white/30 text-white hover:bg-white/20 hover:border-white/40 backdrop-blur-sm"
+            disabled
+          >
+            <Edit2 className="h-4 w-4 mr-2" />
+            Edit Profile
+          </Button>
+        </div>
+
+        {/* Decorative background elements */}
+        <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
+      </div>
+
+      {/* Profile Information */}
+      <Card variant="elevated">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Trophy className="w-5 h-5" />
-            Achievement Badges ({userBadges.length})
+            <User className="h-5 w-5 text-maroon-700" />
+            Personal Information
           </CardTitle>
-          <CardDescription>
-            Badges you've earned for your participation and achievements
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {!badgesLoading ? (
-            <>
-              {/* Rarest Badge Showcase */}
-              {rarestBadge && (
-                <div className="p-4 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-lg border-2 border-amber-300">
-                  <div className="text-center">
-                    <div className="text-6xl mb-2">{rarestBadge.badge.icon}</div>
-                    <h4 className="font-bold text-lg text-amber-900">
-                      {rarestBadge.badge.name}
-                    </h4>
-                    <p className="text-sm text-amber-700 mt-1">
-                      {rarestBadge.badge.description}
-                    </p>
-                    <span className="inline-block mt-2 px-3 py-1 rounded-full text-xs font-medium bg-amber-200 text-amber-900">
-                      {rarestBadge.badge.rarity.toUpperCase()} - Your Rarest Badge
-                    </span>
-                  </div>
-                </div>
-              )}
-
-              {/* Badges by category */}
-              {badgesByCategory.serious.length > 0 && (
-                <BadgeGrid
-                  badges={badgesByCategory.serious}
-                  title="Serious Achievements"
-                />
-              )}
-
-              {badgesByCategory.milestone.length > 0 && (
-                <BadgeGrid
-                  badges={badgesByCategory.milestone}
-                  title="Milestones"
-                />
-              )}
-
-              {badgesByCategory.funny.length > 0 && (
-                <BadgeGrid
-                  badges={badgesByCategory.funny}
-                  title="Fun Badges"
-                />
-              )}
-
-              {userBadges.length === 0 && (
-                <div className="text-center py-12 bg-gray-50 rounded-lg">
-                  <Trophy className="w-16 h-16 mx-auto text-gray-400 mb-3" />
-                  <h3 className="text-lg font-semibold text-gray-700 mb-1">
-                    No Badges Yet
-                  </h3>
-                  <p className="text-gray-500">
-                    Participate in events and challenges to earn badges!
-                  </p>
-                </div>
-              )}
-            </>
-          ) : (
-            <div className="flex items-center justify-center py-8">
-              <div
-                className="w-6 h-6 border-4 border-t-transparent rounded-full animate-spin"
-                style={{ borderColor: `${BRAND_COLORS.PRIMARY} transparent ${BRAND_COLORS.PRIMARY} ${BRAND_COLORS.PRIMARY}` }}
-              />
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Profile details */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Personal Information</CardTitle>
           <CardDescription>
             Your account details and team information
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent>
           <div className="grid gap-6 sm:grid-cols-2">
             {/* Email */}
             <div className="space-y-2">
-              <div className="flex items-center gap-2 text-sm font-medium text-gray-500">
+              <div className="flex items-center gap-2 text-sm font-semibold text-neutral-500">
                 <Mail className="h-4 w-4" aria-hidden="true" />
-                <span>Email</span>
+                <span>Email Address</span>
               </div>
-              <p className="text-gray-900">{profile.email}</p>
+              <p className="text-neutral-900 font-medium">{profile.email}</p>
             </div>
 
             {/* Phone */}
             <div className="space-y-2">
-              <div className="flex items-center gap-2 text-sm font-medium text-gray-500">
+              <div className="flex items-center gap-2 text-sm font-semibold text-neutral-500">
                 <Smartphone className="h-4 w-4" aria-hidden="true" />
                 <span>Phone Number</span>
               </div>
-              <p className="text-gray-900">
-                {profile.phone || 'Not provided'}
+              <p className="text-neutral-900 font-medium">
+                {profile.phone || (
+                  <span className="text-neutral-400 italic">Not provided</span>
+                )}
               </p>
             </div>
 
             {/* Role */}
             <div className="space-y-2">
-              <div className="flex items-center gap-2 text-sm font-medium text-gray-500">
+              <div className="flex items-center gap-2 text-sm font-semibold text-neutral-500">
                 <Shield className="h-4 w-4" aria-hidden="true" />
                 <span>Role</span>
               </div>
-              <p className="text-gray-900">{getRoleLabel(profile.role)}</p>
+              <p className="text-neutral-900 font-medium">{getRoleLabel(profile.role)}</p>
             </div>
 
             {/* Team */}
             <div className="space-y-2">
-              <div className="flex items-center gap-2 text-sm font-medium text-gray-500">
+              <div className="flex items-center gap-2 text-sm font-semibold text-neutral-500">
                 <Users className="h-4 w-4" aria-hidden="true" />
                 <span>Team</span>
               </div>
-              <p className="text-gray-900">{getGenderLabel(profile.gender)}</p>
+              <p className="text-neutral-900 font-medium">{getGenderLabel(profile.gender)}</p>
             </div>
 
             {/* Member Since */}
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 text-sm font-medium text-gray-500">
-                <User className="h-4 w-4" aria-hidden="true" />
+            <div className="space-y-2 sm:col-span-2">
+              <div className="flex items-center gap-2 text-sm font-semibold text-neutral-500">
+                <Calendar className="h-4 w-4" aria-hidden="true" />
                 <span>Member Since</span>
               </div>
-              <p className="text-gray-900">
+              <p className="text-neutral-900 font-medium">
                 {new Date(profile.created_at).toLocaleDateString('en-US', {
                   month: 'long',
+                  day: 'numeric',
                   year: 'numeric',
                 })}
               </p>
@@ -243,36 +190,53 @@ export default function ProfilePage() {
         </CardContent>
       </Card>
 
-      {/* Actions */}
-      <Card>
+      {/* Account Actions */}
+      <Card variant="outlined">
         <CardHeader>
-          <CardTitle>Account Actions</CardTitle>
+          <CardTitle>Account Management</CardTitle>
           <CardDescription>
-            Manage your account settings and security
+            Security settings and account actions
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex flex-col sm:flex-row gap-4">
+          <div className="grid gap-3 sm:grid-cols-2">
             <Button
               variant="outline"
-              className="flex-1"
+              className="h-11 font-semibold"
               disabled
-              aria-label="Edit profile (coming soon)"
             >
+              <Edit2 className="h-4 w-4 mr-2" />
               Edit Profile
             </Button>
             <Button
               variant="outline"
-              className="flex-1"
+              className="h-11 font-semibold"
               disabled
-              aria-label="Change password (coming soon)"
             >
+              <Shield className="h-4 w-4 mr-2" />
               Change Password
             </Button>
           </div>
-          <p className="text-xs text-gray-500 text-center">
-            Profile editing and password management coming soon
-          </p>
+
+          <div className="pt-4 border-t border-neutral-200">
+            <p className="text-sm text-neutral-600 mb-3">
+              Need to sign out?
+            </p>
+            <Button
+              onClick={handleSignOut}
+              variant="outline"
+              className="w-full sm:w-auto h-11 font-semibold border-red-200 text-red-700 hover:bg-red-50 hover:border-red-300"
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              Sign Out
+            </Button>
+          </div>
+
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
+            <p className="text-sm text-blue-900">
+              Profile editing and password management features coming soon.
+            </p>
+          </div>
         </CardContent>
       </Card>
     </div>

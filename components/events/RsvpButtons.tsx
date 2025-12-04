@@ -1,24 +1,24 @@
 'use client';
 
 /**
- * RSVP button group for event responses
- * Shows three buttons: Going, Maybe, Not Going
- * Highlights current selection and handles optimistic updates
- * Enhanced with haptic feedback and visual animations
+ * RSVP Button Group - $100M DESIGN SYSTEM
+ * One-tap RSVP with instant visual feedback, success animations, and loading states
+ * Touch-optimized (44px min height) with clear visual states
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Check, X, HelpCircle } from 'lucide-react';
+import { Check, X, HelpCircle, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { useEventRsvp, RsvpResponse } from '@/lib/hooks/useEventRsvp';
-import { triggerHaptic } from '@/lib/utils/confetti';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface RsvpButtonsProps {
   eventId: string;
   currentResponse?: RsvpResponse;
   onResponseChange?: () => void;
   disabled?: boolean;
+  fullWidth?: boolean;
 }
 
 export function RsvpButtons({
@@ -26,20 +26,27 @@ export function RsvpButtons({
   currentResponse = 'no_response',
   onResponseChange,
   disabled = false,
+  fullWidth = false,
 }: RsvpButtonsProps) {
   const { updateRsvp, updating } = useEventRsvp();
   const [optimisticResponse, setOptimisticResponse] = useState<RsvpResponse>(currentResponse);
+  const [showSuccessCheck, setShowSuccessCheck] = useState(false);
+
+  // Sync with prop changes
+  useEffect(() => {
+    setOptimisticResponse(currentResponse);
+  }, [currentResponse]);
 
   const handleRsvp = async (response: RsvpResponse) => {
     // Optimistic update
     setOptimisticResponse(response);
 
-    // Haptic feedback
-    triggerHaptic('light');
-
     const success = await updateRsvp(eventId, response);
 
     if (success) {
+      // Show success animation
+      setShowSuccessCheck(true);
+      setTimeout(() => setShowSuccessCheck(false), 1500);
       onResponseChange?.();
     } else {
       // Revert on failure
@@ -50,48 +57,83 @@ export function RsvpButtons({
   const isDisabled = disabled || updating;
 
   return (
-    <div className="flex gap-2">
+    <div className={cn('relative flex gap-2', fullWidth && 'w-full')}>
+      {/* Going Button */}
       <Button
-        size="sm"
-        variant={optimisticResponse === 'going' ? 'default' : 'outline'}
+        size="default"
+        variant={optimisticResponse === 'going' ? 'success' : 'outline'}
         onClick={() => handleRsvp('going')}
         disabled={isDisabled}
+        fullWidth={fullWidth}
         className={cn(
-          'flex items-center gap-1',
-          optimisticResponse === 'going' && 'bg-green-600 hover:bg-green-700 border-green-600'
+          'flex-1 min-h-[44px] font-semibold transition-all duration-200',
+          optimisticResponse === 'going' && 'shadow-md'
         )}
+        iconLeft={<Check className="h-5 w-5" />}
       >
-        <Check className="h-4 w-4" />
-        Going
+        {updating && optimisticResponse === 'going' ? (
+          <Loader2 className="h-5 w-5 animate-spin" />
+        ) : (
+          'Going'
+        )}
       </Button>
 
+      {/* Maybe Button */}
       <Button
-        size="sm"
-        variant={optimisticResponse === 'maybe' ? 'default' : 'outline'}
+        size="default"
+        variant={optimisticResponse === 'maybe' ? 'warning' : 'outline'}
         onClick={() => handleRsvp('maybe')}
         disabled={isDisabled}
+        fullWidth={fullWidth}
         className={cn(
-          'flex items-center gap-1',
-          optimisticResponse === 'maybe' && 'bg-yellow-600 hover:bg-yellow-700 border-yellow-600'
+          'flex-1 min-h-[44px] font-semibold transition-all duration-200',
+          optimisticResponse === 'maybe' && 'shadow-md'
         )}
+        iconLeft={<HelpCircle className="h-5 w-5" />}
       >
-        <HelpCircle className="h-4 w-4" />
-        Maybe
+        {updating && optimisticResponse === 'maybe' ? (
+          <Loader2 className="h-5 w-5 animate-spin" />
+        ) : (
+          'Maybe'
+        )}
       </Button>
 
+      {/* Not Going Button */}
       <Button
-        size="sm"
-        variant={optimisticResponse === 'not_going' ? 'default' : 'outline'}
+        size="default"
+        variant={optimisticResponse === 'not_going' ? 'destructive' : 'outline'}
         onClick={() => handleRsvp('not_going')}
         disabled={isDisabled}
+        fullWidth={fullWidth}
         className={cn(
-          'flex items-center gap-1',
-          optimisticResponse === 'not_going' && 'bg-red-600 hover:bg-red-700 border-red-600'
+          'flex-1 min-h-[44px] font-semibold transition-all duration-200',
+          optimisticResponse === 'not_going' && 'shadow-md'
         )}
+        iconLeft={<X className="h-5 w-5" />}
       >
-        <X className="h-4 w-4" />
-        Not Going
+        {updating && optimisticResponse === 'not_going' ? (
+          <Loader2 className="h-5 w-5 animate-spin" />
+        ) : (
+          "Can't Go"
+        )}
       </Button>
+
+      {/* Success Animation Overlay */}
+      <AnimatePresence>
+        {showSuccessCheck && (
+          <motion.div
+            initial={{ scale: 0, opacity: 0, rotate: -90 }}
+            animate={{ scale: 1, opacity: 1, rotate: 0 }}
+            exit={{ scale: 0, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+            className="absolute inset-0 flex items-center justify-center pointer-events-none"
+          >
+            <div className="w-16 h-16 bg-white rounded-full shadow-2xl flex items-center justify-center border-4 border-green-500">
+              <Check className="h-10 w-10 text-green-600" strokeWidth={3} />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
