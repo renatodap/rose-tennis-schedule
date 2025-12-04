@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { PRACTICE_TIME, PLAYER_LOCATIONS, Gender } from '@/lib/constants';
-import { format, parseISO, isPast, isToday } from 'date-fns';
+import { format, parseISO, startOfDay, isBefore, isEqual } from 'date-fns';
 import { ArrowLeft, Clock, MapPin, Users, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
@@ -30,8 +30,10 @@ export default function PracticeDateDetailPage({ params }: PageProps) {
   const [actionLoading, setActionLoading] = useState(false);
 
   const dateObj = parseISO(date);
-  const past = isPast(dateObj) && !isToday(dateObj);
-  const today = isToday(dateObj);
+  const todayStart = startOfDay(new Date());
+  const dateStart = startOfDay(dateObj);
+  const past = isBefore(dateStart, todayStart);
+  const today = isEqual(dateStart, todayStart);
   const myStatus = getMyStatus(date);
   const counts = getDateCounts(date);
   const attendance = getDateAttendance(date);

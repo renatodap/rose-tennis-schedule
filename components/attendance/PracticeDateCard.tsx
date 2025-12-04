@@ -3,7 +3,7 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ConfirmButton } from './ConfirmButton';
-import { format, parseISO, isPast, isToday } from 'date-fns';
+import { format, parseISO, startOfDay, isBefore, isEqual } from 'date-fns';
 import { Users } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 
@@ -29,8 +29,10 @@ export function PracticeDateCard({
   onClick
 }: PracticeDateCardProps) {
   const dateObj = parseISO(date);
-  const past = isPast(dateObj) && !isToday(dateObj);
-  const today = isToday(dateObj);
+  const todayStart = startOfDay(new Date());
+  const dateStart = startOfDay(dateObj);
+  const past = isBefore(dateStart, todayStart);
+  const today = isEqual(dateStart, todayStart);
 
   return (
     <Card
