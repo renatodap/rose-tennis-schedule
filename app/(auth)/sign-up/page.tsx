@@ -153,32 +153,37 @@ export default function SignUpPage() {
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="space-y-2 text-center">
-        <h2 className="text-2xl font-bold tracking-tight">Create Account</h2>
-        <p className="text-sm text-gray-600">
-          Join the Rose-Hulman Tennis team
+        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900">
+          Join the Team
+        </h2>
+        <p className="text-sm text-neutral-600">
+          Create your Rose-Hulman Tennis account
         </p>
       </div>
 
       {/* Microsoft OAuth button - Hidden until IT approval
-      <div className="space-y-3">
+      <div className="space-y-4">
         <MicrosoftSignInButton mode="signup" />
 
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t" />
+            <span className="w-full border-t border-neutral-200" />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-white px-2 text-gray-500">Or sign up with email</span>
+            <span className="bg-white px-3 text-neutral-500 font-medium">Or sign up with email</span>
           </div>
         </div>
       </div>
       */}
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
         {/* Email field */}
         <div className="space-y-2">
-          <Label htmlFor="email">Email *</Label>
+          <Label htmlFor="email" className="text-neutral-700 font-medium">
+            Email Address *
+          </Label>
           <Input
             id="email"
             type="email"
@@ -187,10 +192,11 @@ export default function SignUpPage() {
             disabled={isLoading}
             aria-invalid={errors.email ? 'true' : 'false'}
             aria-describedby={errors.email ? 'email-error' : undefined}
+            className="h-11 transition-all"
             {...register('email')}
           />
           {errors.email && (
-            <p id="email-error" className="text-sm text-red-600" role="alert">
+            <p id="email-error" className="text-sm text-red-600 font-medium" role="alert">
               {errors.email.message}
             </p>
           )}
@@ -199,7 +205,9 @@ export default function SignUpPage() {
         {/* First and Last Name */}
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="firstName">First Name *</Label>
+            <Label htmlFor="firstName" className="text-neutral-700 font-medium">
+              First Name *
+            </Label>
             <Input
               id="firstName"
               type="text"
@@ -208,17 +216,20 @@ export default function SignUpPage() {
               disabled={isLoading}
               aria-invalid={errors.firstName ? 'true' : 'false'}
               aria-describedby={errors.firstName ? 'firstName-error' : undefined}
+              className="h-11 transition-all"
               {...register('firstName')}
             />
             {errors.firstName && (
-              <p id="firstName-error" className="text-sm text-red-600" role="alert">
+              <p id="firstName-error" className="text-sm text-red-600 font-medium" role="alert">
                 {errors.firstName.message}
               </p>
             )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="lastName">Last Name *</Label>
+            <Label htmlFor="lastName" className="text-neutral-700 font-medium">
+              Last Name *
+            </Label>
             <Input
               id="lastName"
               type="text"
@@ -227,10 +238,11 @@ export default function SignUpPage() {
               disabled={isLoading}
               aria-invalid={errors.lastName ? 'true' : 'false'}
               aria-describedby={errors.lastName ? 'lastName-error' : undefined}
+              className="h-11 transition-all"
               {...register('lastName')}
             />
             {errors.lastName && (
-              <p id="lastName-error" className="text-sm text-red-600" role="alert">
+              <p id="lastName-error" className="text-sm text-red-600 font-medium" role="alert">
                 {errors.lastName.message}
               </p>
             )}
@@ -238,30 +250,31 @@ export default function SignUpPage() {
         </div>
 
         {/* Gender selection */}
-        <div className="space-y-2">
-          <Label>Gender *</Label>
+        <div className="space-y-3">
+          <Label className="text-neutral-700 font-medium">Team *</Label>
           <RadioGroup
             value={selectedGender || ''}
             onValueChange={(value) => setValue('gender', value as Gender)}
             disabled={isLoading}
             aria-invalid={errors.gender ? 'true' : 'false'}
             aria-describedby={errors.gender ? 'gender-error' : undefined}
+            className="grid grid-cols-2 gap-3"
           >
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-3 border-2 border-neutral-200 rounded-lg p-3 hover:border-maroon-700 transition-colors cursor-pointer has-[:checked]:border-maroon-700 has-[:checked]:bg-maroon-50">
               <RadioGroupItem value={Gender.MEN} id="men" />
-              <Label htmlFor="men" className="font-normal cursor-pointer">
-                Men&apos;s Team
+              <Label htmlFor="men" className="font-medium cursor-pointer flex-1">
+                Men&apos;s
               </Label>
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-3 border-2 border-neutral-200 rounded-lg p-3 hover:border-maroon-700 transition-colors cursor-pointer has-[:checked]:border-maroon-700 has-[:checked]:bg-maroon-50">
               <RadioGroupItem value={Gender.WOMEN} id="women" />
-              <Label htmlFor="women" className="font-normal cursor-pointer">
-                Women&apos;s Team
+              <Label htmlFor="women" className="font-medium cursor-pointer flex-1">
+                Women&apos;s
               </Label>
             </div>
           </RadioGroup>
           {errors.gender && (
-            <p id="gender-error" className="text-sm text-red-600" role="alert">
+            <p id="gender-error" className="text-sm text-red-600 font-medium" role="alert">
               {errors.gender.message}
             </p>
           )}
@@ -269,7 +282,9 @@ export default function SignUpPage() {
 
         {/* Phone number */}
         <div className="space-y-2">
-          <Label htmlFor="phone">Phone Number</Label>
+          <Label htmlFor="phone" className="text-neutral-700 font-medium">
+            Phone Number <span className="text-neutral-500 font-normal">(Optional)</span>
+          </Label>
           <Input
             id="phone"
             type="tel"
@@ -277,28 +292,32 @@ export default function SignUpPage() {
             autoComplete="tel"
             disabled={isLoading}
             aria-describedby="phone-description"
+            className="h-11 transition-all"
             {...register('phone')}
           />
-          <p id="phone-description" className="text-xs text-gray-500">
-            Optional - for team communication
+          <p id="phone-description" className="text-xs text-neutral-500">
+            For team communication and notifications
           </p>
         </div>
 
         {/* Password field */}
         <div className="space-y-2">
-          <Label htmlFor="password">Password *</Label>
+          <Label htmlFor="password" className="text-neutral-700 font-medium">
+            Password *
+          </Label>
           <Input
             id="password"
             type="password"
-            placeholder="Create a password (min 8 characters)"
+            placeholder="Minimum 8 characters"
             autoComplete="new-password"
             disabled={isLoading}
             aria-invalid={errors.password ? 'true' : 'false'}
             aria-describedby={errors.password ? 'password-error' : undefined}
+            className="h-11 transition-all"
             {...register('password')}
           />
           {errors.password && (
-            <p id="password-error" className="text-sm text-red-600" role="alert">
+            <p id="password-error" className="text-sm text-red-600 font-medium" role="alert">
               {errors.password.message}
             </p>
           )}
@@ -306,7 +325,9 @@ export default function SignUpPage() {
 
         {/* Confirm password field */}
         <div className="space-y-2">
-          <Label htmlFor="confirmPassword">Confirm Password *</Label>
+          <Label htmlFor="confirmPassword" className="text-neutral-700 font-medium">
+            Confirm Password *
+          </Label>
           <Input
             id="confirmPassword"
             type="password"
@@ -315,10 +336,11 @@ export default function SignUpPage() {
             disabled={isLoading}
             aria-invalid={errors.confirmPassword ? 'true' : 'false'}
             aria-describedby={errors.confirmPassword ? 'confirmPassword-error' : undefined}
+            className="h-11 transition-all"
             {...register('confirmPassword')}
           />
           {errors.confirmPassword && (
-            <p id="confirmPassword-error" className="text-sm text-red-600" role="alert">
+            <p id="confirmPassword-error" className="text-sm text-red-600 font-medium" role="alert">
               {errors.confirmPassword.message}
             </p>
           )}
@@ -327,24 +349,34 @@ export default function SignUpPage() {
         {/* Submit button */}
         <Button
           type="submit"
-          className="w-full"
+          className="w-full h-11 bg-maroon-700 hover:bg-maroon-800 text-white font-semibold shadow-sm hover:shadow-md transition-all mt-6"
           disabled={isLoading}
-          style={{
-            backgroundColor: BRAND_COLORS.PRIMARY,
-          }}
           aria-label="Create your account"
         >
-          {isLoading ? 'Creating account...' : 'Sign Up'}
+          {isLoading ? (
+            <span className="flex items-center justify-center gap-2">
+              <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              Creating account...
+            </span>
+          ) : (
+            'Create Account'
+          )}
         </Button>
       </form>
 
+      {/* Divider */}
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t border-neutral-200" />
+        </div>
+      </div>
+
       {/* Sign in link */}
       <div className="text-center text-sm">
-        <span className="text-gray-600">Already have an account? </span>
+        <span className="text-neutral-600">Already have an account? </span>
         <Link
           href="/sign-in"
-          className="font-medium hover:underline"
-          style={{ color: BRAND_COLORS.PRIMARY }}
+          className="font-semibold text-maroon-700 hover:text-maroon-800 hover:underline transition-colors"
         >
           Sign in
         </Link>

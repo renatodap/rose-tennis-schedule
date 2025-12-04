@@ -253,91 +253,6 @@ export interface PushSubscription {
 }
 
 /**
- * Match challenge between players
- */
-export interface Challenge {
-  id: string; // UUID
-  challenger_id: string; // References User.id
-  opponent_id?: string; // References User.id (null if open challenge)
-  challenge_type: 'singles' | 'doubles';
-  proposed_datetime?: string; // ISO datetime
-  location?: string;
-  status: 'open' | 'accepted' | 'completed' | 'cancelled';
-  winner_id?: string; // References User.id
-  score?: string; // e.g., "6-4, 7-5"
-  notes?: string;
-  created_at: string; // ISO timestamp
-  updated_at: string; // ISO timestamp
-}
-
-/**
- * Participants in doubles challenges
- */
-export interface ChallengeParticipant {
-  id: string; // UUID
-  challenge_id: string; // References Challenge.id
-  user_id: string; // References User.id
-  team_side: 'challenger_team' | 'opponent_team';
-  created_at: string; // ISO timestamp
-}
-
-/**
- * Ride offer for an event
- */
-export interface RideOffer {
-  id: string; // UUID
-  event_id: string; // References Event.id
-  driver_id: string; // References User.id
-  capacity: number;
-  departure_location: string;
-  departure_time: string; // ISO datetime
-  return_time?: string; // ISO datetime
-  notes?: string;
-  status: 'active' | 'full' | 'cancelled';
-  created_at: string; // ISO timestamp
-  updated_at: string; // ISO timestamp
-}
-
-/**
- * Ride request from a passenger
- */
-export interface RideRequest {
-  id: string; // UUID
-  ride_offer_id: string; // References RideOffer.id
-  passenger_id: string; // References User.id
-  status: 'pending' | 'confirmed' | 'cancelled';
-  notes?: string;
-  created_at: string; // ISO timestamp
-  updated_at: string; // ISO timestamp
-}
-
-/**
- * Badge definition
- */
-export interface BadgeDefinition {
-  id: string; // e.g., 'perfect-attendance'
-  name: string;
-  description: string;
-  icon: string; // emoji or icon name
-  category: 'serious' | 'funny' | 'milestone';
-  rarity: 'common' | 'rare' | 'legendary';
-  criteria: Record<string, any>; // Flexible criteria object
-  is_active: boolean;
-  created_at: string; // ISO timestamp
-}
-
-/**
- * Badge awarded to a user
- */
-export interface UserBadge {
-  id: string; // UUID
-  user_id: string; // References User.id
-  badge_id: string; // References BadgeDefinition.id
-  awarded_at: string; // ISO timestamp
-  progress_data?: Record<string, any>; // Progress tracking
-}
-
-/**
  * Database tables type map
  */
 export interface Database {
@@ -422,36 +337,6 @@ export interface Database {
         Row: PushSubscription;
         Insert: Omit<PushSubscription, 'id' | 'created_at'>;
         Update: Partial<Omit<PushSubscription, 'id' | 'created_at'>>;
-      };
-      challenges: {
-        Row: Challenge;
-        Insert: Omit<Challenge, 'id' | 'created_at' | 'updated_at'>;
-        Update: Partial<Omit<Challenge, 'id' | 'created_at' | 'updated_at'>>;
-      };
-      challenge_participants: {
-        Row: ChallengeParticipant;
-        Insert: Omit<ChallengeParticipant, 'id' | 'created_at'>;
-        Update: Partial<Omit<ChallengeParticipant, 'id' | 'created_at'>>;
-      };
-      ride_offers: {
-        Row: RideOffer;
-        Insert: Omit<RideOffer, 'id' | 'created_at' | 'updated_at'>;
-        Update: Partial<Omit<RideOffer, 'id' | 'created_at' | 'updated_at'>>;
-      };
-      ride_requests: {
-        Row: RideRequest;
-        Insert: Omit<RideRequest, 'id' | 'created_at' | 'updated_at'>;
-        Update: Partial<Omit<RideRequest, 'id' | 'created_at' | 'updated_at'>>;
-      };
-      badge_definitions: {
-        Row: BadgeDefinition;
-        Insert: Omit<BadgeDefinition, 'created_at'>;
-        Update: Partial<Omit<BadgeDefinition, 'created_at'>>;
-      };
-      user_badges: {
-        Row: UserBadge;
-        Insert: Omit<UserBadge, 'id' | 'awarded_at'>;
-        Update: Partial<Omit<UserBadge, 'id' | 'awarded_at'>>;
       };
     };
   };

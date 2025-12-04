@@ -79,32 +79,37 @@ export default function SignInPage() {
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="space-y-2 text-center">
-        <h2 className="text-2xl font-bold tracking-tight">Sign In</h2>
-        <p className="text-sm text-gray-600">
-          Enter your credentials to access your account
+        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900">
+          Welcome Back
+        </h2>
+        <p className="text-sm text-neutral-600">
+          Sign in to your Rose-Hulman Tennis account
         </p>
       </div>
 
       {/* Microsoft OAuth button - Hidden until IT approval
-      <div className="space-y-3">
+      <div className="space-y-4">
         <MicrosoftSignInButton mode="signin" />
 
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t" />
+            <span className="w-full border-t border-neutral-200" />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-white px-2 text-gray-500">Or continue with email</span>
+            <span className="bg-white px-3 text-neutral-500 font-medium">Or continue with email</span>
           </div>
         </div>
       </div>
       */}
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
         {/* Email field */}
         <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email" className="text-neutral-700 font-medium">
+            Email Address
+          </Label>
           <Input
             id="email"
             type="email"
@@ -113,10 +118,11 @@ export default function SignInPage() {
             disabled={isLoading}
             aria-invalid={errors.email ? 'true' : 'false'}
             aria-describedby={errors.email ? 'email-error' : undefined}
+            className="h-11 transition-all"
             {...register('email')}
           />
           {errors.email && (
-            <p id="email-error" className="text-sm text-red-600" role="alert">
+            <p id="email-error" className="text-sm text-red-600 font-medium" role="alert">
               {errors.email.message}
             </p>
           )}
@@ -124,7 +130,17 @@ export default function SignInPage() {
 
         {/* Password field */}
         <div className="space-y-2">
-          <Label htmlFor="password">Password</Label>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="password" className="text-neutral-700 font-medium">
+              Password
+            </Label>
+            <Link
+              href="/forgot-password"
+              className="text-sm font-medium text-maroon-700 hover:text-maroon-800 hover:underline transition-colors"
+            >
+              Forgot password?
+            </Link>
+          </div>
           <Input
             id="password"
             type="password"
@@ -133,49 +149,49 @@ export default function SignInPage() {
             disabled={isLoading}
             aria-invalid={errors.password ? 'true' : 'false'}
             aria-describedby={errors.password ? 'password-error' : undefined}
+            className="h-11 transition-all"
             {...register('password')}
           />
           {errors.password && (
-            <p id="password-error" className="text-sm text-red-600" role="alert">
+            <p id="password-error" className="text-sm text-red-600 font-medium" role="alert">
               {errors.password.message}
             </p>
           )}
         </div>
 
-        {/* Forgot password link */}
-        <div className="flex justify-end">
-          <Link
-            href="/forgot-password"
-            className="text-sm hover:underline"
-            style={{ color: BRAND_COLORS.PRIMARY }}
-          >
-            Forgot password?
-          </Link>
-        </div>
-
         {/* Submit button */}
         <Button
           type="submit"
-          className="w-full"
+          className="w-full h-11 bg-maroon-700 hover:bg-maroon-800 text-white font-semibold shadow-sm hover:shadow-md transition-all"
           disabled={isLoading}
-          style={{
-            backgroundColor: BRAND_COLORS.PRIMARY,
-          }}
           aria-label="Sign in to your account"
         >
-          {isLoading ? 'Signing in...' : 'Sign In'}
+          {isLoading ? (
+            <span className="flex items-center justify-center gap-2">
+              <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              Signing in...
+            </span>
+          ) : (
+            'Sign In'
+          )}
         </Button>
       </form>
 
+      {/* Divider */}
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t border-neutral-200" />
+        </div>
+      </div>
+
       {/* Sign up link */}
       <div className="text-center text-sm">
-        <span className="text-gray-600">Don&apos;t have an account? </span>
+        <span className="text-neutral-600">Don&apos;t have an account? </span>
         <Link
           href="/sign-up"
-          className="font-medium hover:underline"
-          style={{ color: BRAND_COLORS.PRIMARY }}
+          className="font-semibold text-maroon-700 hover:text-maroon-800 hover:underline transition-colors"
         >
-          Sign up
+          Create account
         </Link>
       </div>
     </div>

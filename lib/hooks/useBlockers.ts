@@ -6,7 +6,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import { getClient } from '@/lib/supabase/client';
 import { RecurringBlocker, OneTimeBlocker } from '@/lib/types/database.types';
 import { useAuth } from './useAuth';
 import { toast } from './use-toast';
@@ -33,7 +33,7 @@ export function useBlockers() {
   const [oneTimeBlockers, setOneTimeBlockers] = useState<OneTimeBlocker[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
-  const supabase = createClient();
+  const supabase = getClient();
 
   // Fetch all blockers
   const fetchBlockers = async () => {

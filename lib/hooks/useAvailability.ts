@@ -6,7 +6,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import { getClient } from '@/lib/supabase/client';
 import { PracticeAvailability } from '@/lib/types/database.types';
 import { AvailabilityStatus } from '@/lib/constants';
 import { useAuth } from './useAuth';
@@ -33,7 +33,7 @@ export function useAvailability() {
   const [availability, setAvailability] = useState<PracticeAvailability[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
-  const supabase = createClient();
+  const supabase = getClient();
 
   // Fetch availability entries
   const fetchAvailability = async () => {

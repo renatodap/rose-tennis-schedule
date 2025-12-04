@@ -6,7 +6,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import { getClient } from '@/lib/supabase/client';
 import { ClassScheduleException } from '@/lib/types/database.types';
 import { useAuth } from './useAuth';
 import { toast } from './use-toast';
@@ -15,7 +15,7 @@ export function useClassExceptions() {
   const [exceptions, setExceptions] = useState<ClassScheduleException[]>([]);
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
-  const supabase = createClient();
+  const supabase = getClient();
 
   /**
    * Fetch all exceptions for the current user
