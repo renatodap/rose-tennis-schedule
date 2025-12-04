@@ -7,6 +7,7 @@ import { PRACTICE_DATES, PRACTICE_TIME, PLAYER_LOCATIONS } from '@/lib/constants
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Loader2, AlertCircle, RefreshCw } from 'lucide-react';
+import { useToast } from '@/lib/hooks/use-toast';
 import { PracticeDateCardSkeleton } from '@/components/attendance/PracticeDateCardSkeleton';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -24,6 +25,7 @@ export default function HomePage() {
     refresh
   } = useAttendance();
   const router = useRouter();
+  const { toast } = useToast();
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   // Determine user's assigned location based on name
@@ -52,8 +54,17 @@ export default function HomePage() {
     setActionLoading(date);
     try {
       await toggleAttendance(date, status, getUserLocation());
+      toast({
+        title: status === 'confirmed' ? 'Confirmed!' : 'Declined',
+        description: `Your attendance has been ${status === 'confirmed' ? 'confirmed' : 'marked as not going'}.`,
+      });
     } catch (err) {
-      console.error('Failed to update attendance:', err);
+      const message = err instanceof Error ? err.message : 'Failed to update attendance';
+      toast({
+        title: 'Error',
+        description: message,
+        variant: 'destructive',
+      });
     } finally {
       setActionLoading(null);
     }

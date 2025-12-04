@@ -28,6 +28,8 @@ export function useAttendance() {
   const fetchAttendance = useCallback(async () => {
     try {
       setLoading(true);
+      setError(null);
+
       const { data, error: fetchError } = await supabase
         .from('bubble_attendance')
         .select(`
@@ -36,7 +38,15 @@ export function useAttendance() {
         `)
         .in('practice_date', PRACTICE_DATES as unknown as string[]);
 
-      if (fetchError) throw fetchError;
+      // If table doesn't exist or other error, just show empty attendance
+      // The dates will still display, just without attendance data
+      if (fetchError) {
+        console.warn('Attendance fetch error (table may not exist):', fetchError.message);
+        setAttendance([]);
+        setMyAttendance(new Map());
+        setLoading(false);
+        return;
+      }
 
       setAttendance((data || []) as AttendanceWithUser[]);
 
@@ -51,7 +61,10 @@ export function useAttendance() {
         setMyAttendance(myMap);
       }
     } catch (err) {
-      setError(err as Error);
+      console.error('Attendance fetch exception:', err);
+      // Still allow page to render with empty data
+      setAttendance([]);
+      setMyAttendance(new Map());
     } finally {
       setLoading(false);
     }
@@ -63,39 +76,42 @@ export function useAttendance() {
 
   // Toggle attendance for a date
   const toggleAttendance = async (date: string, status: 'confirmed' | 'declined', location: 'bubble' | 'src') => {
-    if (!user) return;
-
-    try {
-      const existing = myAttendance.get(date);
-
-      if (existing) {
-        // Update existing record
-        const { error: updateError } = await supabase
-          .from('bubble_attendance')
-          .update({ status, location, updated_at: new Date().toISOString() })
-          .eq('id', existing.id);
-
-        if (updateError) throw updateError;
-      } else {
-        // Insert new record
-        const { error: insertError } = await supabase
-          .from('bubble_attendance')
-          .insert({
-            user_id: user.id,
-            practice_date: date,
-            status,
-            location
-          });
-
-        if (insertError) throw insertError;
-      }
-
-      // Refresh data
-      await fetchAttendance();
-    } catch (err) {
-      setError(err as Error);
-      throw err;
+    if (!user) {
+      throw new Error('You must be logged in to update attendance');
     }
+
+    const existing = myAttendance.get(date);
+
+    if (existing) {
+      // Update existing record
+      const { error: updateError } = await supabase
+        .from('bubble_attendance')
+        .update({ status, location, updated_at: new Date().toISOString() })
+        .eq('id', existing.id);
+
+      if (updateError) {
+        console.error('Update error:', updateError);
+        throw new Error(updateError.message || 'Failed to update attendance');
+      }
+    } else {
+      // Insert new record
+      const { error: insertError } = await supabase
+        .from('bubble_attendance')
+        .insert({
+          user_id: user.id,
+          practice_date: date,
+          status,
+          location
+        });
+
+      if (insertError) {
+        console.error('Insert error:', insertError);
+        throw new Error(insertError.message || 'Failed to save attendance');
+      }
+    }
+
+    // Refresh data
+    await fetchAttendance();
   };
 
   // Get attendance for a specific date
