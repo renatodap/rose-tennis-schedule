@@ -253,6 +253,19 @@ export interface PushSubscription {
 }
 
 /**
+ * Bubble practice attendance record
+ */
+export interface BubbleAttendance {
+  id: string;
+  user_id: string;
+  practice_date: string; // ISO date (YYYY-MM-DD)
+  status: 'confirmed' | 'declined';
+  location: 'bubble' | 'src';
+  created_at: string;
+  updated_at: string;
+}
+
+/**
  * Database tables type map
  */
 export interface Database {
@@ -337,6 +350,11 @@ export interface Database {
         Row: PushSubscription;
         Insert: Omit<PushSubscription, 'id' | 'created_at'>;
         Update: Partial<Omit<PushSubscription, 'id' | 'created_at'>>;
+      };
+      bubble_attendance: {
+        Row: BubbleAttendance;
+        Insert: Omit<BubbleAttendance, 'id' | 'created_at' | 'updated_at'>;
+        Update: Partial<Omit<BubbleAttendance, 'id' | 'created_at' | 'updated_at'>>;
       };
     };
   };

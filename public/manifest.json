@@ -1,7 +1,7 @@
 {
-  "name": "Rose-Hulman Tennis",
-  "short_name": "RH Tennis",
-  "description": "Rose-Hulman Tennis Team Schedule and Availability Management",
+  "name": "Rose Tennis Practice",
+  "short_name": "Practice",
+  "description": "Confirm attendance for winter tennis practice",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#800000",

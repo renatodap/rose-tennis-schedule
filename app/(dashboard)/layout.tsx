@@ -12,11 +12,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useUser } from '@/lib/hooks/useUser';
 import { CompleteProfileDialog } from '@/components/auth/CompleteProfileDialog';
-import NotificationPermissionPrompt from '@/components/notifications/NotificationPermissionPrompt';
 import { Sidebar } from '@/components/navigation/Sidebar';
 import { BottomNav } from '@/components/navigation/BottomNav';
 import { Header } from '@/components/navigation/Header';
-import { BRAND_COLORS, UserRole } from '@/lib/constants';
+import { UserRole } from '@/lib/constants';
 import { colors, motionVariants } from '@/lib/design-tokens';
 
 export default function DashboardLayout({
@@ -128,8 +127,6 @@ export default function DashboardLayout({
       {/* Mobile bottom navigation */}
       <BottomNav />
 
-      {/* Notification permission prompt */}
-      <NotificationPermissionPrompt />
     </div>
   );
 }

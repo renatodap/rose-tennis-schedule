@@ -9,11 +9,9 @@ import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { NavItem } from './NavItem';
 import { UserMenu } from './UserMenu';
-import { Home, Calendar, Trophy, CalendarDays, User as UserIcon, Settings } from 'lucide-react';
-import { BRAND_COLORS } from '@/lib/constants';
-import { colors, gradients } from '@/lib/design-tokens';
+import { Home, User as UserIcon } from 'lucide-react';
+import { colors } from '@/lib/design-tokens';
 import type { User } from '@/lib/types/database.types';
-import { UserRole } from '@/lib/constants';
 
 interface SidebarProps {
   profile: User;
@@ -25,15 +23,8 @@ export function Sidebar({ profile, isAdmin }: SidebarProps) {
 
   const navigation = [
     { name: 'Home', href: '/dashboard', icon: Home },
-    { name: 'Schedule', href: '/schedule', icon: Calendar },
-    { name: 'Matches', href: '/matches', icon: Trophy },
-    { name: 'Events', href: '/events', icon: CalendarDays },
     { name: 'Profile', href: '/profile', icon: UserIcon },
   ];
-
-  if (isAdmin) {
-    navigation.push({ name: 'Admin', href: '/admin', icon: Settings });
-  }
 
   const isCurrentPath = (href: string) => {
     if (href === '/dashboard') {

@@ -1,0 +1,132 @@
+'use client';
+
+import { useEffect, useState, useCallback } from 'react';
+import { getClient } from '../supabase/client';
+import { useAuth } from './useAuth';
+import { BubbleAttendance } from '../types/database.types';
+import { PRACTICE_DATES } from '../constants';
+
+interface AttendanceWithUser extends BubbleAttendance {
+  user: {
+    id: string;
+    first_name: string;
+    last_name: string;
+    gender: string;
+  };
+}
+
+export function useAttendance() {
+  const { user } = useAuth();
+  const [attendance, setAttendance] = useState<AttendanceWithUser[]>([]);
+  const [myAttendance, setMyAttendance] = useState<Map<string, BubbleAttendance>>(new Map());
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  const supabase = getClient();
+
+  // Fetch all attendance records with user info
+  const fetchAttendance = useCallback(async () => {
+    try {
+      setLoading(true);
+      const { data, error: fetchError } = await supabase
+        .from('bubble_attendance')
+        .select(`
+          *,
+          user:users(id, first_name, last_name, gender)
+        `)
+        .in('practice_date', PRACTICE_DATES as unknown as string[]);
+
+      if (fetchError) throw fetchError;
+
+      setAttendance((data || []) as AttendanceWithUser[]);
+
+      // Build my attendance map
+      if (user) {
+        const myMap = new Map<string, BubbleAttendance>();
+        (data || []).forEach(record => {
+          if (record.user_id === user.id) {
+            myMap.set(record.practice_date, record as BubbleAttendance);
+          }
+        });
+        setMyAttendance(myMap);
+      }
+    } catch (err) {
+      setError(err as Error);
+    } finally {
+      setLoading(false);
+    }
+  }, [supabase, user]);
+
+  useEffect(() => {
+    fetchAttendance();
+  }, [fetchAttendance]);
+
+  // Toggle attendance for a date
+  const toggleAttendance = async (date: string, status: 'confirmed' | 'declined', location: 'bubble' | 'src') => {
+    if (!user) return;
+
+    try {
+      const existing = myAttendance.get(date);
+
+      if (existing) {
+        // Update existing record
+        const { error: updateError } = await supabase
+          .from('bubble_attendance')
+          .update({ status, location, updated_at: new Date().toISOString() })
+          .eq('id', existing.id);
+
+        if (updateError) throw updateError;
+      } else {
+        // Insert new record
+        const { error: insertError } = await supabase
+          .from('bubble_attendance')
+          .insert({
+            user_id: user.id,
+            practice_date: date,
+            status,
+            location
+          });
+
+        if (insertError) throw insertError;
+      }
+
+      // Refresh data
+      await fetchAttendance();
+    } catch (err) {
+      setError(err as Error);
+      throw err;
+    }
+  };
+
+  // Get attendance for a specific date
+  const getDateAttendance = (date: string) => {
+    return attendance.filter(a => a.practice_date === date);
+  };
+
+  // Get my status for a date
+  const getMyStatus = (date: string) => {
+    return myAttendance.get(date)?.status || null;
+  };
+
+  // Get counts for a date
+  const getDateCounts = (date: string) => {
+    const dateAttendance = getDateAttendance(date);
+    return {
+      confirmed: dateAttendance.filter(a => a.status === 'confirmed').length,
+      declined: dateAttendance.filter(a => a.status === 'declined').length,
+      total: dateAttendance.length
+    };
+  };
+
+  return {
+    attendance,
+    myAttendance,
+    loading,
+    error,
+    toggleAttendance,
+    getDateAttendance,
+    getMyStatus,
+    getDateCounts,
+    refresh: fetchAttendance
+  };
+}

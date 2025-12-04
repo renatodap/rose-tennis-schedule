@@ -8,14 +8,11 @@
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { NavItem } from './NavItem';
-import { Home, Calendar, Trophy, CalendarDays, User } from 'lucide-react';
+import { Home, User } from 'lucide-react';
 import { shadows } from '@/lib/design-tokens';
 
 const navItems = [
   { href: '/dashboard', icon: Home, label: 'Home' },
-  { href: '/schedule', icon: Calendar, label: 'Schedule' },
-  { href: '/matches', icon: Trophy, label: 'Matches' },
-  { href: '/events', icon: CalendarDays, label: 'Events' },
   { href: '/profile', icon: User, label: 'Profile' },
 ];
 

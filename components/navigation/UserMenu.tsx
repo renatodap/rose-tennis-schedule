@@ -1,22 +1,16 @@
 'use client';
 
 /**
- * UserMenu - User profile menu for sidebar and header
- * Shows user info and quick actions
+ * UserMenu - Simple user profile menu
+ * Shows user info with profile link and sign out button
  */
 
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/hooks/useAuth';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { User as UserIcon, Settings, LogOut } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { User as UserIcon, LogOut } from 'lucide-react';
 import { colors } from '@/lib/design-tokens';
 import type { User } from '@/lib/types/database.types';
 
@@ -46,66 +40,50 @@ export function UserMenu({ profile, isAdmin, variant = 'sidebar' }: UserMenuProp
   if (variant === 'sidebar') {
     return (
       <div className="border-t border-white/10 pt-4 mt-4">
-        <DropdownMenu>
-          <DropdownMenuTrigger className="w-full rounded-lg p-3 hover:bg-white/5 transition-colors duration-200 text-left">
-            <div className="flex items-center gap-x-3">
-              <Avatar className="h-10 w-10">
-                <AvatarFallback
-                  style={{
-                    backgroundColor: colors.accent[400],
-                    color: colors.maroon[900],
-                    fontWeight: 600,
-                  }}
-                >
-                  {getInitials()}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-white truncate">
-                  {profile.first_name} {profile.last_name}
-                </p>
-                <p className="text-xs text-white/60 truncate">{profile.email}</p>
-              </div>
-            </div>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
-            <div className="px-2 py-1.5">
-              <p className="text-sm font-medium">
-                {profile.first_name} {profile.last_name}
-              </p>
-              <p className="text-xs text-gray-500">{profile.email}</p>
-            </div>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-              <Link href="/profile" className="cursor-pointer">
-                <UserIcon className="mr-2 h-4 w-4" />
-                Profile
-              </Link>
-            </DropdownMenuItem>
-            {isAdmin && (
-              <DropdownMenuItem asChild>
-                <Link href="/admin" className="cursor-pointer">
-                  <Settings className="mr-2 h-4 w-4" />
-                  Admin
-                </Link>
-              </DropdownMenuItem>
-            )}
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
-              <LogOut className="mr-2 h-4 w-4" />
-              Sign Out
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div className="flex items-center gap-x-3 p-3">
+          <Avatar className="h-10 w-10">
+            <AvatarFallback
+              style={{
+                backgroundColor: colors.accent[400],
+                color: colors.maroon[900],
+                fontWeight: 600,
+              }}
+            >
+              {getInitials()}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-white truncate">
+              {profile.first_name} {profile.last_name}
+            </p>
+            <p className="text-xs text-white/60 truncate">{profile.email}</p>
+          </div>
+        </div>
+        <div className="flex gap-2 px-3 mt-2">
+          <Link href="/profile" className="flex-1">
+            <Button variant="ghost" size="sm" className="w-full text-white/80 hover:text-white hover:bg-white/10">
+              <UserIcon className="h-4 w-4 mr-1.5" />
+              Profile
+            </Button>
+          </Link>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleSignOut}
+            className="text-white/80 hover:text-white hover:bg-white/10"
+          >
+            <LogOut className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
     );
   }
 
   // Header variant (mobile + desktop header)
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger className="relative h-10 w-10 rounded-full hover:ring-2 hover:ring-offset-2 transition-all duration-200" style={{ '--tw-ring-color': colors.maroon[700] } as React.CSSProperties}>
-        <Avatar className="h-10 w-10">
+    <div className="flex items-center gap-2">
+      <Link href="/profile">
+        <Avatar className="h-10 w-10 hover:ring-2 hover:ring-offset-2 transition-all duration-200 cursor-pointer" style={{ '--tw-ring-color': colors.maroon[700] } as React.CSSProperties}>
           <AvatarFallback
             style={{
               backgroundColor: `${colors.maroon[700]}20`,
@@ -116,35 +94,16 @@ export function UserMenu({ profile, isAdmin, variant = 'sidebar' }: UserMenuProp
             {getInitials()}
           </AvatarFallback>
         </Avatar>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
-        <div className="px-2 py-1.5">
-          <p className="text-sm font-medium">
-            {profile.first_name} {profile.last_name}
-          </p>
-          <p className="text-xs text-gray-500">{profile.email}</p>
-        </div>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <Link href="/profile" className="cursor-pointer">
-            <UserIcon className="mr-2 h-4 w-4" />
-            Profile
-          </Link>
-        </DropdownMenuItem>
-        {isAdmin && (
-          <DropdownMenuItem asChild>
-            <Link href="/admin" className="cursor-pointer">
-              <Settings className="mr-2 h-4 w-4" />
-              Admin
-            </Link>
-          </DropdownMenuItem>
-        )}
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
-          <LogOut className="mr-2 h-4 w-4" />
-          Sign Out
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+      </Link>
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={handleSignOut}
+        className="text-gray-500 hover:text-gray-700"
+        title="Sign out"
+      >
+        <LogOut className="h-4 w-4" />
+      </Button>
+    </div>
   );
 }

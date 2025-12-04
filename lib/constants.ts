@@ -140,3 +140,38 @@ export enum AvailabilityStatus {
   AVAILABLE = 'available',
   UNAVAILABLE = 'unavailable'
 }
+
+/**
+ * Winter 2024-25 bubble practice dates
+ * All sessions 5-7 PM
+ */
+export const PRACTICE_DATES = [
+  '2024-12-08',
+  '2024-12-10',
+  '2024-12-12',
+  '2024-12-15',
+  '2024-12-17',
+  '2024-12-19',
+  '2025-01-05',
+  '2025-01-07',
+  '2025-01-09',
+  '2025-01-12',
+  '2025-01-14',
+  '2025-01-16',
+] as const;
+
+export const PRACTICE_TIME = '5:00 PM - 7:00 PM';
+
+/**
+ * Player location assignments
+ */
+export const PLAYER_LOCATIONS = {
+  bubble: {
+    men: ['Joao', 'Ervin', 'Ephraim', 'Tim', 'Chris', 'Renato', 'Matt', 'Eli', 'Andrew'],
+    women: ['Lia', 'Emerson', 'Addie', 'Katie', 'Julia', 'Nova', 'Camille', 'Paige', 'Autumn']
+  },
+  src: {
+    men: ['Andres', 'Dale', 'Stadler', 'Nick', 'Jayden', 'Leo', 'Burch', 'Eoin'],
+    women: ['Isha', 'Abby', 'Brooke']
+  }
+} as const;
